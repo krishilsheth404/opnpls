@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route to Chemist</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <style>
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map');
+
+        // Add gray-colored theme using CartoDB tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Chemist location
+        var chemistLat = 19.0775, chemistLng = 72.8790; // Example chemist coordinates
+        
+        // Check for Geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                var userLat = position.coords.latitude;
+                var userLng = position.coords.longitude;
+
+                // Create bounds to include both points
+                var bounds = L.latLngBounds([
+                    [userLat, userLng],
+                    [chemistLat, chemistLng]
+                ]);
+
+                // Fit the map to these bounds
+                map.fitBounds(bounds, { padding: [20, 20] });
+
+                // Add user marker
+                L.marker([userLat, userLng]).addTo(map).bindPopup("<b>Your Location</b>").openPopup();
+
+                // Add chemist marker
+                L.marker([chemistLat, chemistLng]).addTo(map).bindPopup("<b>Chemist Location</b>").openPopup();
+
+                // Add route from user to chemist
+                L.Routing.control({
+                    waypoints: [
+                        L.latLng(userLat, userLng), // User location
+                        L.latLng(chemistLat, chemistLng) // Chemist location
+                    ],
+                    routeWhileDragging: false,
+                    serviceUrl: 'https://router.project-osrm.org/route/v1',
+                    show: false // Hides the sidebar with route description
+                }).addTo(map);
+
+                // Hide the routing container explicitly
+                document.querySelectorAll('.leaflet-routing-container')[0].style.display = "none";
+
+            }, function (error) {
+                alert("Error getting your location: " + error.message);
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous" />
+
+    <!-- Please DO NOT remove this line, all link and script tags will be merged to here -->
+
+    <link rel="stylesheet" type="text/css" href="/css/common.css" />
+
+    <link rel="stylesheet" type="text/css" href="/css/fonts.css" />
+
+    <link rel="stylesheet" type="text/css" href="/css/MultiMedicnineCart.css" />
+
+  </head>
+
+  <style>
+    @use "utils" as *;
+@use "global" as *;
+
+.multi-medicnine-cart {
+  &.root {
+    position: relative;
+    width: 390px;
+    height: 844px;
+    min-height: 844px;
+    background-color: rgb(255 255 255);
+    border-radius: 25px;
+    overflow: hidden;
+  }
+
+  .line {
+    position: absolute;
+    inset: 159px 20px 684px 21px;
+    width: 349px;
+    height: 1px;
+    background-color: rgb(219 221 225);
+  }
+
+  .image {
+    position: absolute;
+    inset: 174px 287px 588px 21px;
+    width: 82px;
+    height: 82px;
+  }
+
+  .info {
+    position: absolute;
+    inset: 180px auto auto 123px;
+    width: 36px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(52 168 83);
+    letter-spacing: -0.4px;
+  }
+
+  .desc {
+    position: absolute;
+    inset: 199px auto auto 123px;
+    width: 144px;
+    height: 32px;
+    font: 700 13px/1.23 Inter, Helvetica, Arial, serif;
+    color: rgb(0 0 0);
+  }
+
+  .info1 {
+    position: absolute;
+    inset: 235px auto auto 123px;
+    width: 59px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(74 85 104);
+    letter-spacing: -0.4px;
+  }
+
+  .image2 {
+    position: absolute;
+    inset: 180px 21px 646px 351px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .image3 {
+    position: absolute;
+    inset: 230px 21px 588px 343px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .image5 {
+    position: absolute;
+    inset: 230px 51px 588px 309px;
+    width: 30px;
+    height: 26px;
+  }
+
+  .info2 {
+    position: absolute;
+    inset: 234px auto auto 319.5px;
+    display: flex;
+    justify-content: center;
+    width: 10px;
+    height: 17px;
+    font: 600 14px/1.21 Inter, Helvetica, Arial, serif;
+    color: rgb(255 255 255);
+    text-align: center;
+  }
+
+  .image31 {
+    position: absolute;
+    inset: 230px 85px 588px 279px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .line1 {
+    position: absolute;
+    inset: 271px 20px 572px 21px;
+    width: 349px;
+    height: 1px;
+    background-color: rgb(219 221 225);
+  }
+
+  .image1 {
+    position: absolute;
+    inset: 286px 287px 476px 21px;
+    width: 82px;
+    height: 82px;
+  }
+
+  .info3 {
+    position: absolute;
+    inset: 292px auto auto 123px;
+    width: 36px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(52 168 83);
+    letter-spacing: -0.4px;
+  }
+
+  .desc1 {
+    position: absolute;
+    inset: 311px auto auto 123px;
+    width: 192px;
+    height: 32px;
+    font: 700 13px/1.23 Inter, Helvetica, Arial, serif;
+    color: rgb(0 0 0);
+  }
+
+  .info11 {
+    position: absolute;
+    inset: 347px auto auto 123px;
+    width: 59px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(74 85 104);
+    letter-spacing: -0.4px;
+  }
+
+  .image21 {
+    position: absolute;
+    inset: 292px 21px 534px 351px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .image8 {
+    position: absolute;
+    inset: 342px 53px 476px 311px;
+    width: 26px;
+    height: 26px;
+    filter: drop-shadow(0 0 5px rgb(0 0 0 / 10%));
+  }
+
+  .image32 {
+    position: absolute;
+    inset: 342px 21px 476px 343px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .image51 {
+    position: absolute;
+    inset: 342px 51px 476px 309px;
+    width: 30px;
+    height: 26px;
+  }
+
+  .info21 {
+    position: absolute;
+    inset: 346px auto auto 319.5px;
+    display: flex;
+    justify-content: center;
+    width: 10px;
+    height: 17px;
+    font: 600 14px/1.21 Inter, Helvetica, Arial, serif;
+    color: rgb(255 255 255);
+    text-align: center;
+  }
+
+  .image33 {
+    position: absolute;
+    inset: 342px 85px 476px 279px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .line11 {
+    position: absolute;
+    inset: 383px 20px 460px 21px;
+    width: 349px;
+    height: 1px;
+  }
+
+  .image4 {
+    position: absolute;
+    inset: 398px 287px 364px 21px;
+    width: 82px;
+    height: 82px;
+  }
+
+  .info4 {
+    position: absolute;
+    inset: 404px auto auto 123px;
+    width: 38px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(52 168 83);
+  }
+
+  .desc2 {
+    position: absolute;
+    inset: 423px auto auto 123px;
+    width: 119px;
+    height: 32px;
+    font: 700 13px/1.23 Inter, Helvetica, Arial, serif;
+    color: rgb(0 0 0);
+  }
+
+  .info12 {
+    position: absolute;
+    inset: 459px auto auto 123px;
+    width: 59px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(74 85 104);
+    letter-spacing: -0.4px;
+  }
+
+  .image22 {
+    position: absolute;
+    inset: 404px 21px 422px 351px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .image81 {
+    position: absolute;
+    inset: 454px 53px 364px 311px;
+    width: 26px;
+    height: 26px;
+    filter: drop-shadow(0 0 5px rgb(0 0 0 / 10%));
+  }
+
+  .image34 {
+    position: absolute;
+    inset: 454px 21px 364px 343px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .image52 {
+    position: absolute;
+    inset: 454px 51px 364px 309px;
+    width: 30px;
+    height: 26px;
+  }
+
+  .info22 {
+    position: absolute;
+    inset: 458px auto auto 319.5px;
+    display: flex;
+    justify-content: center;
+    width: 10px;
+    height: 17px;
+    font: 600 14px/1.21 Inter, Helvetica, Arial, serif;
+    color: rgb(255 255 255);
+    text-align: center;
+  }
+
+  .image35 {
+    position: absolute;
+    inset: 454px 85px 364px 279px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .line2 {
+    position: absolute;
+    inset: 495px 20px 348px 21px;
+    width: 349px;
+    height: 1px;
+    background-color: rgb(219 221 225);
+  }
+
+  .image6 {
+    position: absolute;
+    inset: 510px 287px 252px 21px;
+    width: 82px;
+    height: 82px;
+  }
+
+  .info5 {
+    position: absolute;
+    inset: 516px auto auto 123px;
+    width: 38px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(52 168 83);
+  }
+
+  .desc3 {
+    position: absolute;
+    inset: 535px auto auto 123px;
+    width: 119px;
+    height: 32px;
+    font: 700 13px/1.23 Inter, Helvetica, Arial, serif;
+    color: rgb(0 0 0);
+  }
+
+  .info13 {
+    position: absolute;
+    inset: 571px auto auto 123px;
+    width: 59px;
+    height: 15px;
+    font: 700 12px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(74 85 104);
+    letter-spacing: -0.4px;
+  }
+
+  .image23 {
+    position: absolute;
+    inset: 516px 21px 310px 351px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .image82 {
+    position: absolute;
+    inset: 566px 53px 252px 311px;
+    width: 26px;
+    height: 26px;
+    filter: drop-shadow(0 0 5px rgb(0 0 0 / 10%));
+  }
+
+  .image36 {
+    position: absolute;
+    inset: 566px 21px 252px 343px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .image53 {
+    position: absolute;
+    inset: 566px 51px 252px 309px;
+    width: 30px;
+    height: 26px;
+  }
+
+  .info23 {
+    position: absolute;
+    inset: 570px auto auto 319.5px;
+    display: flex;
+    justify-content: center;
+    width: 10px;
+    height: 17px;
+    font: 600 14px/1.21 Inter, Helvetica, Arial, serif;
+    color: rgb(255 255 255);
+    text-align: center;
+  }
+
+  .image37 {
+    position: absolute;
+    inset: 566px 85px 252px 279px;
+    width: 26px;
+    height: 26px;
+  }
+
+  .line3 {
+    position: absolute;
+    inset: 607px 20px 236px 21px;
+    width: 349px;
+    height: 1px;
+    background-color: rgb(219 221 225);
+  }
+
+  .color4 {
+    position: absolute;
+    inset: 54px 0 691px 5px;
+    width: 385px;
+    height: 99px;
+    background-color: rgb(255 255 255);
+  }
+
+  .color5 {
+    position: absolute;
+    inset: 49px 21px 765px 339px;
+    width: 30px;
+    height: 30px;
+    background-color: rgb(118 118 128 / 11.7%);
+    border-radius: 15px;
+  }
+
+  .info31 {
+    position: absolute;
+    inset: 54px auto auto 348.5px;
+    display: flex;
+    justify-content: center;
+    width: 12px;
+    height: 21px;
+    font: 500 16px/1.31 "Albert Sans", Helvetica, Arial, serif;
+    color: rgb(60 60 67 / 60%);
+    text-align: center;
+  }
+
+  .image11 {
+    position: absolute;
+    inset: 65px 209px 761px 111px;
+    width: 70px;
+    height: 18px;
+  }
+
+  .info41 {
+    position: absolute;
+    inset: 50px auto auto 20px;
+    width: 164px;
+    height: 29px;
+    font: 600 24px/1.21 Inter, Helvetica, Arial, serif;
+    color: rgb(0 0 0);
+  }
+
+  .color6 {
+    position: absolute;
+    inset: 697px 21px 103px;
+    width: 348px;
+    height: 44px;
+    background-color: rgb(52 168 83);
+    border-radius: 4px;
+  }
+
+  .info51 {
+    position: absolute;
+    inset: 709px auto auto 136.5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 118px;
+    height: 20px;
+    font: 600 16px/1.25 Inter, Helvetica, Arial, serif;
+    color: rgb(255 255 255);
+    text-align: center;
+    letter-spacing: -0.4px;
+  }
+
+  .color7 {
+    position: absolute;
+    inset: 105px 21px 700px;
+    width: 348px;
+    height: 39px;
+    background-color: rgb(241 255 233);
+    border-radius: 4px;
+  }
+
+  .image12 {
+    position: absolute;
+    inset: 118px 344px 713px 33px;
+    width: 13px;
+    height: 13px;
+  }
+
+  .info6 {
+    position: absolute;
+    inset: 115px auto auto 58px;
+    display: flex;
+    align-items: center;
+    width: 108px;
+    height: 19px;
+    font: 700 12px/1.58 Inter, Helvetica, Arial, serif;
+    color: rgb(111 168 78);
+  }
+
+  .image13 {
+    position: absolute;
+    inset: 761px 0 0;
+    width: 390px;
+    height: 83px;
+  }
+}
+
+  </style>
+  <body class="flex-column">
+
+    <div class="multi-medicnine-cart root">
+    
+      <div class="line"></div>
+      <img class="image" src="/assets/9abea1bf73a68ae18c99f607ab576521.png" alt="alt text" />
+      <div class="info">1,80 €</div>
+      <p class="desc">Yellow Cherry Tomatoes 250g</p>
+      <div class="info1">3,45 € / kg</div>
+      <img class="image2" src="/assets/73f2b36d29d5d772d9a7270a0d843fb3.svg" alt="alt text" />
+      <img class="image3" src="/assets/47b428a781b4216ac79d600157084d4a.svg" alt="alt text" />
+      <img class="image5" src="/assets/9fedec7205015111f43352d42722605d.svg" alt="alt text" />
+      <div class="info2">1</div>
+      <img class="image31" src="/assets/8fb32c189cd7fbe79026ba28c1b3fa02.svg" alt="alt text" />
+      <div class="line1"></div>
+      <img class="image1" src="/assets/4d05edef1881d4e390779fe078b1219d.png" alt="alt text" />
+      <div class="info3">1,60 €</div>
+      <p class="desc1">
+        Roma VF
+        <br />
+        Tomatoes
+      </p>
+      <div class="info11">2,85 € / kg</div>
+      <img class="image21" src="/assets/73f2b36d29d5d772d9a7270a0d843fb3.svg" alt="alt text" />
+      <img class="image8" src="/assets/47b428a781b4216ac79d600157084d4a.svg" alt="alt text" />
+      <img class="image32" src="/assets/47b428a781b4216ac79d600157084d4a.svg" alt="alt text" />
+      <img class="image51" src="/assets/9fedec7205015111f43352d42722605d.svg" alt="alt text" />
+      <div class="info21">2</div>
+      <img class="image33" src="/assets/8fb32c189cd7fbe79026ba28c1b3fa02.svg" alt="alt text" />
+      <img class="line11" src="/assets/f17751d463157dac620089887122571f.svg" alt="alt text" />
+      <img class="image4" src="/assets/8ef9a99459d5c6eba8efe9b9177dddbd.png" alt="alt text" />
+      <div class="info4">2,60 €</div>
+      <p class="desc2">Broccoli Lorem Ipsum text here</p>
+      <div class="info12">3,45 € / kg</div>
+      <img class="image22" src="/assets/73f2b36d29d5d772d9a7270a0d843fb3.svg" alt="alt text" />
+      <img class="image81" src="/assets/0d862c3bc5396bd7e21eddd43e0abe66.svg" alt="alt text" />
+      <img class="image34" src="/assets/0d862c3bc5396bd7e21eddd43e0abe66.svg" alt="alt text" />
+      <img class="image52" src="/assets/9fedec7205015111f43352d42722605d.svg" alt="alt text" />
+      <div class="info22">1</div>
+      <img class="image35" src="/assets/8fb32c189cd7fbe79026ba28c1b3fa02.svg" alt="alt text" />
+      <div class="line2"></div>
+      <img class="image6" src="/assets/d520bfba1ab9c3bb31a655fe13931f7c.png" alt="alt text" />
+      <div class="info5">2,80 €</div>
+      <p class="desc3">Carrots Lorem Ipsum text here</p>
+      <div class="info13">4,20 € / kg</div>
+      <img class="image23" src="/assets/73f2b36d29d5d772d9a7270a0d843fb3.svg" alt="alt text" />
+      <img class="image82" src="/assets/0d862c3bc5396bd7e21eddd43e0abe66.svg" alt="alt text" />
+      <img class="image36" src="/assets/0d862c3bc5396bd7e21eddd43e0abe66.svg" alt="alt text" />
+      <img class="image53" src="/assets/9fedec7205015111f43352d42722605d.svg" alt="alt text" />
+      <div class="info23">1</div>
+      <img class="image37" src="/assets/8fb32c189cd7fbe79026ba28c1b3fa02.svg" alt="alt text" />
+      <div class="line3"></div>
+      <div class="color4"></div>
+      <div class="color5"></div>
+      <div class="info31">􀅾</div>
+      <img class="image11" src="/assets/3f3354637e2262149bba4bbaefe1fc0b.svg" alt="alt text" />
+      <div class="info41">Medicine Cart</div>
+      <div class="color6"></div>
+      <div class="info51">Compare Prices</div>
+      <div class="color7"></div>
+      <img class="image12" src="/assets/3e38a7c5ba75626624823a861658dd64.svg" alt="alt text" />
+      <div class="info6">You’re good to go!</div>
+      <img class="image13" src="/assets/34970abad32e3ecf1ccbaa732ba90590.svg" alt="alt text" />
+    </div>
+
+  </body>
+
+</html>

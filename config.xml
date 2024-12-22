@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.example.medicomp" version="1.0.0" versionCode="1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Medicomp</name>
+    <description>Your app's description</description>
+    <author email="you@example.com" href="http://yourwebsite.com">Your Name</author>
+
+    <!-- Define the app's start page -->
+    <content src="index.html" />
+
+    <!-- Define the custom app icon -->
+    <icon src="www/img/chemistIcon.png" />
+
+    <!-- Plugin for splash screen -->
+    <plugin name="cordova-plugin-splashscreen" spec="^5.0.2" />
+
+    <!-- Preferences for splash screen -->
+    <preference name="SplashScreen" value="medicomp-loading-unscreen.gif" />
+    <preference name="SplashScreenDelay" value="3000" /> <!-- 3 seconds delay before navigating -->
+    <preference name="AutoHideSplashScreen" value="false" />
+    <preference name="SplashScreenShowDuration" value="3000" /> <!-- Show duration in milliseconds -->
+    <preference name="SplashScreenBackgroundColor" value="#FFFFFF" /> <!-- Optional: Set background color -->
+
+    <!-- For Android specific splash screen settings -->
+    <platform name="android">
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-ldpi" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-mdpi" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-hdpi" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-xhdpi" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-xxhdpi" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" density="port-xxxhdpi" />
+    </platform>
+
+    <!-- For iOS specific splash screen settings -->
+    <platform name="ios">
+        <splash src="www/img/medicomp-loading-unscreen.gif" width="320" height="480" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" width="640" height="960" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" width="750" height="1334" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" width="1242" height="2208" />
+        <splash src="www/img/medicomp-loading-unscreen.gif" width="2048" height="2732" />
+    </platform>
+
+    <!-- Allow access to external URLs if needed -->
+    <access origin="*" />
+</widget>
