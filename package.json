@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "scripts": {
+    "test": "",
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
   "devDependencies": {
     "cordova-android": "^13.0.0",
     "cordova-ios": "^7.1.1",
