@@ -92,16 +92,16 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-const serverOptions = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-};
+// const serverOptions = {
+//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+// };
 
-// Create HTTPS server with SSL certificates
-const server = https.createServer(serverOptions, app);
+// // Create HTTPS server with SSL certificates
+// const server = https.createServer(serverOptions, app);
 
 
-// const server = http.createServer();
+const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
@@ -414,10 +414,25 @@ app.get("/comparison", authenticateToken, async (req, res) => {
 
 });
 
-app.get("/checkout", authenticateToken, async (req, res) => {
+app.post("/checkout", authenticateToken, async (req, res) => {
 
 
-    await res.sendFile(__dirname + "/finalcheckoutpage.html");
+    console.log(req.body)
+    const db =  client.db("MedicompDb");
+    const collection =  db.collection("User");
+
+    // Fetch user by the ID stored in the token
+    // const userId = new ObjectId(req.userId);
+    // const user = await collection.findOne({ _id: userId });
+
+    // console.log(user)
+    console.log("User Id -> "+req.userId)
+
+    
+    
+    res.render(__dirname+'/finalCheckOutPage.ejs', {
+        final: JSON.stringify(req.body, null, 2) // Convert object to string
+    });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
 });
 
@@ -455,11 +470,14 @@ app.post("/compareCartItems", authenticateToken, async (req, res) => {
     }
 
 
-    const chemistIds = ["chemist123-token"]; // Example IDs
+    // const chemistIds = ["chemist123-token"]; // Example IDs
+    const chemistsCollection = db.collection('LocalChemists');
+
+    const chemistIds = await chemistsCollection.distinct('chemistId');
+
 
     // Function to fetch data for a single chemist
     const fetchDataFromChemist = async (chemistId) => {
-        const chemistsCollection = db.collection('LocalChemists');
         const chemist = await chemistsCollection.findOne({ chemistId });
 
         if (!chemist) {
@@ -523,10 +541,23 @@ const multer = require('multer');
 const upload = multer(); // Memory storage if you want to store the file temporarily in memory
 
 app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
+    console.log(req.body)
+    console.log(req.file)
+    const { medicineList, chemistId } = req.body;
+    const db =  client.db("MedicompDb");
+    const chemistsCollection = db.collection('LocalChemists');
+
+    const chemist = await chemistsCollection.findOne({ chemistId });
+
+
     console.log('Place Order endpoint hit');
 
-    const { customerName, phoneNumber, address, medicineList, chemistId, authToken } = req.body;
-    var prescription = req.file; // Get the uploaded file
+    // const { customerName, phoneNumber, address, medicineList, chemistId, authToken } = req.body;
+    var customerName="krishil"
+    var phoneNumber="9372677245"
+    var address="Gowalia Tank"
+    var authToken="auth"
+    var prescription = req.file; 
 
     prescription = prescription ? prescription : "Not Required";
 
