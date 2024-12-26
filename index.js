@@ -21,7 +21,8 @@ const https = require('https');
 const activeConnections = {}; // Store active SSE connections
 
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+app.set('view engine', 'ejs');
 // Then, you can directly use `/locationIcon.svg` in your templates.
 
 
@@ -32,9 +33,8 @@ const JWT_EXPIRATION = "7d"; // 7-day session
 app.use(cookieParser()); // Using cookie-parser middleware for cookie handling
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.set('view engine', 'ejs');
 
-app.set('views', path.join(__dirname, 'views'));
+// app.set('views', path.join(__dirname, 'views'));
 
 // HTTPS cookie configuration
 app.use(
@@ -692,7 +692,7 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
-    res.render(__dirname+'orderStatusPage.ejs', {
+    res.render(__dirname+'/orderStatusPage.ejs', {
         final: JSON.stringify(orderOk, null, 2) // Convert object to string
     });
 });
