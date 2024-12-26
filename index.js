@@ -191,6 +191,7 @@ io.on('connection', (socket) => {
             try {
             
             console.log(activeConnections[orderId])
+            console.log(orderId)
             if (activeConnections[orderId]) {
                 activeConnections[orderId].forEach(clientRes => {
                     // Send the updated order status to each connected client
