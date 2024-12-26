@@ -187,6 +187,9 @@ io.on('connection', (socket) => {
                 { $set: { status: status } } // Update PrescriptionVerified to 'Done'
             );
 
+
+            try {
+            
             if (activeConnections[orderId]) {
                 activeConnections[orderId].forEach(clientRes => {
                     // Send the updated order status to each connected client
@@ -198,6 +201,10 @@ io.on('connection', (socket) => {
                     clientRes.write(`data: ${JSON.stringify(update)}\n\n`);
                 });
             }
+                
+        } catch (error) {
+                console.log(error);
+        }
 
         });
 
