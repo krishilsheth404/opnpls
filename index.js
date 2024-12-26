@@ -22,6 +22,8 @@ const activeConnections = {}; // Store active SSE connections
 
 
 app.use(express.static(__dirname));
+app.set('views', path.join(__dirname)); // Set current directory as the views directory
+
 app.set('view engine', 'ejs');
 // Then, you can directly use `/locationIcon.svg` in your templates.
 
@@ -445,7 +447,7 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
     
     
-    res.render(__dirname+'/finalCheckOutPage.ejs', {
+    res.render(__dirname+'/finalCheckoutPage.ejs', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
