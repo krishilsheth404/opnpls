@@ -445,7 +445,7 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
     
     
-    res.render('finalCheckOutPage', {
+    res.render('finalCheckOutPage.ejs', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
