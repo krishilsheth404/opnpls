@@ -11,6 +11,7 @@ const { MongoClient, ObjectId } = require('mongodb');
 const fs = require('fs');
 const ejs = require("ejs");
 const socketIo = require('socket.io');
+const cors = require('cors');
 
 
 // const rateLimit = require('express-rate-limit');
@@ -21,6 +22,7 @@ const https = require('https');
 const activeConnections = {}; // Store active SSE connections
 
 
+app.use(cors());
 app.use(express.static(__dirname));
 app.set('views', path.join(__dirname)); // Set current directory as the views directory
 

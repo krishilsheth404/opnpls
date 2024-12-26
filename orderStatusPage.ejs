@@ -1427,6 +1427,7 @@ const eventSource = new EventSource(`/order-updates?orderId=${orderId}`);
 eventSource.onmessage = function(event) {
   console.log("Helllo")
     const data = JSON.parse(event.data);
+    console.log(data)
     const orderStatusElement = document.getElementById('orderStatus');
     orderStatusElement.innerHTML = `${data.status}`;
 
