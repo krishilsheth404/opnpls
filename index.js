@@ -94,16 +94,16 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-const serverOptions = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-};
+// const serverOptions = {
+//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+// };
 
-// Create HTTPS server with SSL certificates
-const server = https.createServer(serverOptions, app);
+// // Create HTTPS server with SSL certificates
+// const server = https.createServer(serverOptions, app);
 
 
-// const server = http.createServer();
+const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
@@ -445,7 +445,7 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
     
     
-    res.render(__dirname+'/finalCheckOutPage.ejs', {
+    res.render('finalCheckOutPage', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
@@ -692,7 +692,7 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
-    res.render(__dirname + '/orderStatusPage.ejs', {
+    res.render('orderStatusPage', {
         final: JSON.stringify(orderOk, null, 2) // Convert object to string
     });
 });
