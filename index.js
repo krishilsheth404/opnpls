@@ -711,35 +711,40 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     const userId = req.userId;
 
     // const user = await collection.findOne({ _id: userId });
-
+    console.log("part 1")
+    
     if (!orderId) {
         return res.status(400).send("Order ID is required");
     }
-
-  
-
+    
+    console.log("part 2")
+    
+    
     // Example order data (replace this with your database query logic)
     
     const db =  client.db("MedicompDb");
     const ordersCollection = db.collection('Orders');
-
-
-
-
-
+    
+    
+    
+    console.log("part 3")
+    
+    
     // Ensure the user has access to this order
     const userOk = await ordersCollection.findOne({ customerToken: userId });
     const orderOk = await ordersCollection.findOne({ orderId: orderId});
-
+    
     if (!orderOk|| !userOk) {
         return res.status(403).send("You are not authorized to access this order.");
     }
-
-
+    
+    console.log("part 4")
+    
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
-
+    
+    console.log("part 5")
 
     if (!activeConnections[orderId]) {
         activeConnections[orderId] = [];
