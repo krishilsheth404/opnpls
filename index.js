@@ -445,7 +445,7 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
     
     
-    res.render('finalCheckOutPage.ejs', {
+    res.render(__dirname+'finalCheckOutPage.ejs', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
@@ -692,7 +692,7 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
-    res.render('orderStatusPage', {
+    res.render(__dirname+'orderStatusPage.ejs', {
         final: JSON.stringify(orderOk, null, 2) // Convert object to string
     });
 });
