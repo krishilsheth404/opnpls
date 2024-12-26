@@ -729,18 +729,13 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
             res.setHeader("Cache-Control", "no-cache");
             res.setHeader("Connection", "keep-alive");
             res.flushHeaders();
-    
             if (!activeConnections[orderId]) {
                 activeConnections[orderId] = {};
             }
              activeConnections[orderId][userId]=res
-            console.log(`Active connections for Order ID ${orderId}: `, Object.keys(activeConnections[orderId]).length);
-            const welcomeMsg = {
-                orderId,
-                message: 'Welcome to live updates!',
-                timestamp: new Date().toISOString(),
-            };
-            res.write(`data: ${JSON.stringify(welcomeMsg)}\n\n`);
+            res.write(`data: {"message": "test"}\n\n`);
+    
+           
             // Clean up when the client disconnects
             req.on('close', () => {
                 if(activeConnections[orderId] && activeConnections[orderId][userId]){
