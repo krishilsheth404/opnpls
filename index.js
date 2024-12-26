@@ -757,7 +757,9 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     activeConnections[orderId].push(res);
     console.log("part 6")
 
-    console.log(activeConnections[orderId])
+    // console.log(activeConnections[orderId])
+    console.log(`Active connections for Order ID ${orderId}: ${activeConnections[orderId].length}`);
+
     // Clean up when the client disconnects
     req.on('close', () => {
         activeConnections[orderId] = activeConnections[orderId].filter(conn => conn !== res);
