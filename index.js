@@ -762,6 +762,13 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     // console.log(activeConnections[orderId])
     console.log(`Active connections for Order ID ${orderId}: ${activeConnections[orderId].length}`);
 
+    const welcomeMsg = {
+        orderId,
+        message: 'Welcome to live updates!',
+        timestamp: new Date().toISOString(),
+    };
+    res.write(`data: ${JSON.stringify(welcomeMsg)}\n\n`);
+
     // Clean up when the client disconnects
     req.on('close', () => {
         activeConnections[orderId] = activeConnections[orderId].filter(conn => conn !== res);
