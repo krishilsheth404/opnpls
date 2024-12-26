@@ -747,12 +747,14 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     res.setHeader("Connection", "keep-alive");
     
     console.log("part 5")
-
+    
     if (!activeConnections[orderId]) {
         activeConnections[orderId] = [];
     }
     activeConnections[orderId].push(res);
+    console.log("part 6")
 
+    console.log(activeConnections[orderId])
     // Clean up when the client disconnects
     req.on('close', () => {
         activeConnections[orderId] = activeConnections[orderId].filter(conn => conn !== res);
