@@ -177,7 +177,10 @@ io.on('connection', (socket) => {
         });
        
         socket.on('updateOrderStatusFromChemist', async (data) => {
-            const { orderId, status } = data;
+            const status = data.status;
+
+            const orderId = data.orderId; 
+
 
             console.log("Order Status Updated For " + orderId)
 
