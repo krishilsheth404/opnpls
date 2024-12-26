@@ -445,7 +445,7 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
     
     
-    res.render(__dirname+'finalCheckOutPage.ejs', {
+    res.render('/home/openpills/htdocs/openpills.com/miv5/views/finalCheckOutPage.ejs', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
