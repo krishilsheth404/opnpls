@@ -729,23 +729,23 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
             res.setHeader("Cache-Control", "no-cache");
             res.setHeader("Connection", "keep-alive");
             res.flushHeaders();
-            if (!activeConnections[orderId]) {
-                activeConnections[orderId] = {};
-            }
-             activeConnections[orderId][userId]=res
+            // if (!activeConnections[orderId]) {
+            //     activeConnections[orderId] = {};
+            // }
+            //  activeConnections[orderId][userId]=res
             res.write(`data: {"message": "test"}\n\n`);
     
            
             // Clean up when the client disconnects
-            req.on('close', () => {
-                if(activeConnections[orderId] && activeConnections[orderId][userId]){
-                    delete activeConnections[orderId][userId]
-                    if(Object.keys(activeConnections[orderId]).length === 0){
-                       delete activeConnections[orderId];
-                     }
-                     console.log(`User ${userId} disconnected from order: ${orderId}`);
-                }
-            });
+            // req.on('close', () => {
+            //     if(activeConnections[orderId] && activeConnections[orderId][userId]){
+            //         delete activeConnections[orderId][userId]
+            //         if(Object.keys(activeConnections[orderId]).length === 0){
+            //            delete activeConnections[orderId];
+            //          }
+            //          console.log(`User ${userId} disconnected from order: ${orderId}`);
+            //     }
+            // });
      }else{
         // Handle initial page load
        res.render(__dirname+'/orderStatusPage.ejs', {
