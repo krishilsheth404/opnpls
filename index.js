@@ -18,6 +18,8 @@ const socketIo = require('socket.io');
 
 const http = require('http');
 const https = require('https');
+const activeConnections = {}; // Store active SSE connections
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 // Then, you can directly use `/locationIcon.svg` in your templates.
@@ -182,6 +184,19 @@ io.on('connection', (socket) => {
                 { orderId }, // Find the document with matching orderId
                 { $set: { status: status } } // Update PrescriptionVerified to 'Done'
             );
+
+            if (activeConnections[orderId]) {
+                activeConnections[orderId].forEach(clientRes => {
+                    // Send the updated order status to each connected client
+                    const update = {
+                        orderId,
+                        status: status,
+                        timestamp: new Date().toISOString(),
+                    };
+                    clientRes.write(`data: ${JSON.stringify(update)}\n\n`);
+                });
+            }
+
         });
 
         socket.on('orderRejection', async (message) => {
@@ -540,7 +555,7 @@ app.post("/compareCartItems", authenticateToken, async (req, res) => {
 const multer = require('multer');
 const upload = multer(); // Memory storage if you want to store the file temporarily in memory
 
-app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
+app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (req, res) => {
     console.log(req.body)
     console.log(req.file)
     const { medicineList, chemistId } = req.body;
@@ -549,6 +564,8 @@ app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
 
     const chemist = await chemistsCollection.findOne({ chemistId });
 
+
+    var realtimeCartData={};
 
     console.log('Place Order endpoint hit');
 
@@ -577,6 +594,9 @@ app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
 
 
         const orderId = `Order_${count}`;
+        
+        realtimeCartData.orderId=orderId;
+
         const newOrder = {
             orderId: `Order_${count}`,
             customerName,
@@ -601,10 +621,10 @@ app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
             chemistSocketForOrders.emit('newOrder', newOrder);
             console.log(`Order ${orderId} sent to Chemist ${chemistId}`);
             console.log(newOrder)
-            res.status(200).json({ message: 'Order placed successfully', orderId });
+            // res.status(200).json({ message: 'Order placed successfully', orderId });
         } else {
             console.log(`No active socket for Chemist ${chemistId}`);
-            res.status(404).json({ error: 'Chemist not available' });
+            // res.status(404).json({ error: 'Chemist not available' });
         }
 
 
@@ -619,6 +639,7 @@ app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
                 address: address.replace(/['"`]/g, ''),
                 medicineList,
                 chemistId,
+                customerToken:req.userId,
                 status: 'Pending', // Initial status
                 createdAt: new Date(),
                 PrescriptionVerified:(prescription=="Not Required" ? "Done" : "Pending"),
@@ -628,15 +649,105 @@ app.post('/placeOrder', upload.single('prescription'), async (req, res) => {
 
         }
 
+        // console.log(realtimeCartData)
+
+        // await res.render(__dirname+'/orderPlaced.ejs', {
+        //     final: JSON.stringify(realtimeCartData, null, 2) // Convert object to string
+        // });
+
+        res.redirect(`/order-status-page?orderId=${orderId}`);
+
+
 
 
 
 
     } catch (err) {
         console.error('Error placing order:', err);
-        res.status(500).json({ error: 'Failed to place order.' });
+        // res.status(500).json({ error: 'Failed to place order.' });
     }
 });
+
+// SSE route with authentication
+// SSE route with authentication
+app.get("/order-status-page", authenticateToken, async (req, res) => {
+    const orderId = req.query.orderId; // Get orderId from query parameters
+    const userId = req.userId;
+
+    // const user = await collection.findOne({ _id: userId });
+
+    if (!orderId) {
+        return res.status(400).send("Order ID is required");
+    }
+    // Example order data (replace this with your database query logic)
+    
+    const db =  client.db("MedicompDb");
+    const ordersCollection = db.collection('Orders');
+
+    // Ensure the user has access to this order
+    const userOk = await ordersCollection.findOne({ customerToken: userId });
+    const orderOk = await ordersCollection.findOne({ orderId: orderId});
+
+    if (!orderOk|| !userOk) {
+        return res.status(403).send("You are not authorized to access this order.");
+    }
+
+    res.render(__dirname + '/orderStatusPage.ejs', {
+        final: JSON.stringify(orderOk, null, 2) // Convert object to string
+    });
+});
+
+app.get("/order-updates", authenticateToken, async (req, res) => {
+    const orderId = req.query.orderId; // Get orderId from query parameters
+    const userId = req.userId;
+
+    // const user = await collection.findOne({ _id: userId });
+
+    if (!orderId) {
+        return res.status(400).send("Order ID is required");
+    }
+
+  
+
+    // Example order data (replace this with your database query logic)
+    
+    const db =  client.db("MedicompDb");
+    const ordersCollection = db.collection('Orders');
+
+
+
+
+
+    // Ensure the user has access to this order
+    const userOk = await ordersCollection.findOne({ customerToken: userId });
+    const orderOk = await ordersCollection.findOne({ orderId: orderId});
+
+    if (!orderOk|| !userOk) {
+        return res.status(403).send("You are not authorized to access this order.");
+    }
+
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+
+    if (!activeConnections[orderId]) {
+        activeConnections[orderId] = [];
+    }
+    activeConnections[orderId].push(res);
+
+    // Clean up when the client disconnects
+    req.on('close', () => {
+        activeConnections[orderId] = activeConnections[orderId].filter(conn => conn !== res);
+        if (activeConnections[orderId].length === 0) {
+            delete activeConnections[orderId];
+        }
+        res.end();
+    });
+
+});
+
 
 
 app.post("/addItemToCart", authenticateToken, async (req, res) => {
