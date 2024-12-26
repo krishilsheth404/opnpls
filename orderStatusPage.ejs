@@ -1424,6 +1424,10 @@ width: 33%;
 // Create an EventSource to listen for real-time order status updates
 const eventSource = new EventSource(`/order-updates?orderId=${orderId}`);
 
+
+eventSource.onopen = () => {
+    console.log("SSE connection opened successfully");
+};
 eventSource.onmessage = function(event) {
   console.log("Helllo")
     const data = JSON.parse(event.data);
