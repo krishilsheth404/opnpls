@@ -193,12 +193,9 @@ io.on('connection', (socket) => {
             );
 
 
-            try {
-            
-            console.log(activeConnections[orderId])
-            console.log(orderId)
             if (activeConnections[orderId]) {
-                activeConnections[orderId].forEach(clientRes => {
+                Object.keys(activeConnections[orderId]).forEach(userId => {
+                   const clientRes = activeConnections[orderId][userId]
                     // Send the updated order status to each connected client
                     const update = {
                         orderId,
@@ -208,10 +205,6 @@ io.on('connection', (socket) => {
                     clientRes.write(`data: ${JSON.stringify(update)}\n\n`);
                 });
             }
-                
-        } catch (error) {
-                console.log(error);
-        }
 
         });
 
@@ -754,14 +747,14 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     console.log("part 5")
     
     if (!activeConnections[orderId]) {
-        activeConnections[orderId] = [];
+        activeConnections[orderId] = {};
     }
-    activeConnections[orderId].push(res);
+    
     console.log("part 6")
 
     // console.log(activeConnections[orderId])
-    console.log(`Active connections for Order ID ${orderId}: ${activeConnections[orderId].length}`);
-
+    activeConnections[orderId][userId]=res
+    console.log(`Active connections for Order ID ${orderId}: `, Object.keys(activeConnections[orderId]).length);
     const welcomeMsg = {
         orderId,
         message: 'Welcome to live updates!',
@@ -771,11 +764,13 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
 
     // Clean up when the client disconnects
     req.on('close', () => {
-        activeConnections[orderId] = activeConnections[orderId].filter(conn => conn !== res);
-        if (activeConnections[orderId].length === 0) {
-            delete activeConnections[orderId];
+        if(activeConnections[orderId] && activeConnections[orderId][userId]){
+            delete activeConnections[orderId][userId]
+            if(Object.keys(activeConnections[orderId]).length === 0){
+               delete activeConnections[orderId];
+             }
+             console.log(`User ${userId} disconnected from order: ${orderId}`);
         }
-        res.end();
     });
 
 });
