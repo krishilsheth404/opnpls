@@ -13,14 +13,17 @@ const ejs = require("ejs");
 const socketIo = require('socket.io');
 const cors = require('cors');
 
+const SSE = require('express-sse'); // Import express-sse
+
 
 // const rateLimit = require('express-rate-limit');
 // const http = require('http');
 
 const http = require('http');
 const https = require('https');
-const activeConnections = {}; // Store active SSE connections
 
+const sse = new SSE();
+const activeConnections = {}; // To group SSE by `orderId`
 
 app.use(cors());
 app.use(express.static(__dirname));
@@ -193,18 +196,20 @@ io.on('connection', (socket) => {
             );
 
 
+            const update = {
+                orderId,
+                status,
+                timestamp: new Date().toISOString(),
+            };
+
             if (activeConnections[orderId]) {
-                Object.keys(activeConnections[orderId]).forEach(userId => {
-                   const clientRes = activeConnections[orderId][userId]
-                    // Send the updated order status to each connected client
-                    const update = {
-                        orderId,
-                        status: status,
-                        timestamp: new Date().toISOString(),
-                    };
+                activeConnections[orderId].forEach((clientRes) => {
                     clientRes.write(`data: ${JSON.stringify(update)}\n\n`);
                 });
+            } else {
+                console.log(`No active connections for Order ${orderId}`);
             }
+
 
         });
 
@@ -664,7 +669,7 @@ app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (
         //     final: JSON.stringify(realtimeCartData, null, 2) // Convert object to string
         // });
 
-        res.redirect(`/order-updates?orderId=${orderId}`);
+        res.redirect(`/order-status-page?orderId=${orderId}`);
 
 
 
@@ -701,6 +706,10 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
+    res.render(__dirname+'/orderStatusPage.ejs', {
+        final: JSON.stringify(orderOk, null, 2),
+        orderId: orderId
+   });
   
 });
 
@@ -712,47 +721,29 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
         return res.status(400).send("Order ID is required");
     }
     
-      const db =  client.db("MedicompDb");
-    const ordersCollection = db.collection('Orders');
-    
-    const userOk = await ordersCollection.findOne({ customerToken: userId });
-    const orderOk = await ordersCollection.findOne({ orderId: orderId});
-    
-    if (!orderOk|| !userOk) {
-        return res.status(403).send("You are not authorized to access this order.");
-    }
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
 
-     const acceptHeader = req.headers['accept'];
-     if(acceptHeader === 'text/event-stream'){
-         // Handle SSE Connection
-           res.setHeader("Content-Type", "text/event-stream");
-            res.setHeader("Cache-Control", "no-cache");
-            res.setHeader("Connection", "keep-alive");
-            res.flushHeaders();
-            // if (!activeConnections[orderId]) {
-            //     activeConnections[orderId] = {};
-            // }
-            //  activeConnections[orderId][userId]=res
-            res.write(`data: {"message": "test"}\n\n`);
+    // Write a ping to keep the connection alive
+    res.write(': ping\n\n');
+
+    // Save the response object for this orderId
+    if (!activeConnections[orderId]) {
+        activeConnections[orderId] = [];
+    }
+    activeConnections[orderId].push(res);
+
+    console.log(`Client connected for Order ${orderId}`);
+
+    // Handle client disconnect
+    req.on('close', () => {
+        console.log(`Client disconnected for Order ${orderId}`);
+        activeConnections[orderId] = activeConnections[orderId].filter((clientRes) => clientRes !== res);
+    });
+  
+
     
-           
-            // Clean up when the client disconnects
-            // req.on('close', () => {
-            //     if(activeConnections[orderId] && activeConnections[orderId][userId]){
-            //         delete activeConnections[orderId][userId]
-            //         if(Object.keys(activeConnections[orderId]).length === 0){
-            //            delete activeConnections[orderId];
-            //          }
-            //          console.log(`User ${userId} disconnected from order: ${orderId}`);
-            //     }
-            // });
-     }else{
-        // Handle initial page load
-       res.render(__dirname+'/orderStatusPage.ejs', {
-             final: JSON.stringify(orderOk, null, 2),
-             orderId: orderId
-        });
-     }
 });
 
 
