@@ -724,6 +724,8 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
+    res.status(200); // Ensure the client sees 200 OK immediately.
+
 
     // Write a ping to keep the connection alive
     res.write(': ping\n\n');
