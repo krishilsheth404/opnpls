@@ -202,6 +202,9 @@ io.on('connection', (socket) => {
                 timestamp: new Date().toISOString(),
             };
 
+            console.log('Current activeConnections:', activeConnections);
+
+
             if (activeConnections[orderId]) {
                 activeConnections[orderId].forEach((clientRes) => {
                     clientRes.write(`data: ${JSON.stringify(update)}\n\n`);
