@@ -101,16 +101,16 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-// const serverOptions = {
-//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-// };
+const serverOptions = {
+    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+};
 
-// // Create HTTPS server with SSL certificates
-// const server = https.createServer(serverOptions, app);
+// Create HTTPS server with SSL certificates
+const server = https.createServer(serverOptions, app);
 
 
-const server = http.createServer();
+// const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
