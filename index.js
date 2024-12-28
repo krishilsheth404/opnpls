@@ -83,23 +83,28 @@ connectToDb();
 
 // Authentication middleware to validate JWT token
 const authenticateToken = (req, res, next) => {
-    const token = req.cookies.token || req.headers['authorization'];
+    console.log('Request path:', req.path);
+    console.log('Request headers:', req.headers);
+    console.log('Request cookies:', req.cookies);
 
+    const token = req.cookies.token || req.headers['authorization'];
     if (!token) {
-        // If no token, redirect to the registration page
+        console.error('No token provided.');
         return res.redirect('/landing');
     }
 
-    jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
+            console.error('JWT verification failed:', err.message);
             return res.status(403).json({ success: false, message: "Invalid token" });
         }
 
-        // User ID from decoded token
+        console.log('Token verified:', decoded);
         req.userId = decoded.userId;
         next();
     });
 };
+
 
 const serverOptions = {
     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
@@ -241,16 +246,6 @@ server.listen(8080, () => {
 
 
 app.get('/landing', async (req, res) => {
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js').then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-          }).catch((error) => {
-            console.log('Service Worker registration failed:', error);
-          });
-        });
-      }
-
       
     await res.sendFile(__dirname + "/landingPage.html");
 })
@@ -258,20 +253,17 @@ app.get('/login', async (req, res) => {
     await res.sendFile(__dirname + "/registrationPage.html");
 })
 
+// Redirect '/' to '/home' with authentication
 app.get('/', authenticateToken, async (req, res) => {
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/service-worker.js').then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-          }).catch((error) => {
-            console.log('Service Worker registration failed:', error);
-          });
-        });
-      }
-
-      
+    console.log('Root endpoint reached');
     await res.sendFile(__dirname + "/index.html");
-})
+});
+
+// Authenticate and serve the main page at '/home'
+app.get('/home', authenticateToken, async (req, res) => {
+    await res.sendFile(__dirname + "/index.html");
+});
+
 
 app.get('/locationIcon.svg', authenticateToken, async (req, res) => {
     await res.sendFile(__dirname + "/locationIcon.svg");

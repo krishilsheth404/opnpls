@@ -2,7 +2,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HomePage | OpenPills</title>
-  <link rel="manifest" href="/manifest.json">
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500&amp;display=swap">
@@ -6869,20 +6868,23 @@ async function addItemToCart(productId) {
 
 </script>
 
+
 <script>
-  // Registering service worker on the client side (browser)
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/service-worker.js')
-        .then((registration) => {
-          console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch((error) => {
-          console.error('Service Worker registration failed:', error);
-        });
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+        if (registrations.length === 0) {
+            console.log('No active service workers.');
+        } else {
+            registrations.forEach((registration) => {
+                console.log('Active service worker:', registration.scope);
+            });
+        }
     });
-  }
+}
+
 </script>
+
+</body> 
 
 
 
