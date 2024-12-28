@@ -101,16 +101,16 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-const serverOptions = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-};
+// const serverOptions = {
+//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+// };
 
-// Create HTTPS server with SSL certificates
-const server = https.createServer(serverOptions, app);
+// // Create HTTPS server with SSL certificates
+// const server = https.createServer(serverOptions, app);
 
 
-// const server = http.createServer();
+const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
@@ -241,6 +241,17 @@ server.listen(8080, () => {
 
 
 app.get('/landing', async (req, res) => {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          }).catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+        });
+      }
+
+      
     await res.sendFile(__dirname + "/landingPage.html");
 })
 app.get('/login', async (req, res) => {
@@ -248,6 +259,17 @@ app.get('/login', async (req, res) => {
 })
 
 app.get('/', authenticateToken, async (req, res) => {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js').then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          }).catch((error) => {
+            console.log('Service Worker registration failed:', error);
+          });
+        });
+      }
+
+      
     await res.sendFile(__dirname + "/index.html");
 })
 
@@ -681,6 +703,7 @@ app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (
 
     } catch (err) {
         console.error('Error placing order:', err);
+        console.log(err.code)   
         // res.status(500).json({ error: 'Failed to place order.' });
     }
 });
@@ -709,7 +732,7 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
-    res.render(__dirname+'/orderStatusPage.ejs', {
+    res.render(__dirname+'/orderStatusPage2.ejs', {
         final: JSON.stringify(orderOk, null, 2),
         orderId: orderId
    });

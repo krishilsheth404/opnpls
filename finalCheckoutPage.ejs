@@ -1339,7 +1339,6 @@ button {
 
 <% const parsedFinal = JSON.parse(final); %>
 
-<pre><%= final %></pre>
 <form action="/placeOrder" method="POST" enctype="multipart/form-data">
 
       <div class="container" style="width: 100%;">
@@ -1431,7 +1430,7 @@ border-top: 1px dotted lightgray;">
           <span class="min-order-delivery">Upload Your Prescription Here</span>
         </div>
         <div class="flex-row-e-a" style="margin-top:40px">
-          <input type="file" id="prescription" style="width:auto" name="prescription" value="Upload Prescription" accept="image/*"  class="button-b">
+          <input type="file" id="prescription" style="width:100%" name="prescription" value="Upload Prescription" accept="image/*"  class="button-b">
           
             <span class="shop-now">Upload</span> 
           <style>

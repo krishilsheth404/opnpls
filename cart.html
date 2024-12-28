@@ -2014,28 +2014,31 @@
 </style>
 
 <body>
-    <div class="main-container" style="width: 100%;">
+    <div class="main-container" style="width: 100%;height: max-content;">
         <div class="flex-row-ed" style="width: 100%;">
             <div class="header" style="display: flex;align-items: center;justify-content: center;">
                 <span class="title" style="position: relative;">Medicine Cart</span>
             </div>
             <div class="rectangle" style="    width: 100%;
     margin: auto;top: auto;left: auto;position: relative;height: auto;">
-                <div class="frame" style="margin: 0px;width: 100%;top: 70px;">
+                <div class="frame" style="margin: 0px;
+                width: 100%;
+                top: 70px;
+                width: 90%;
+                margin: auto;">
                     <input class="frame-input" />
                     <div class="vector"></div>
                     <span class="good-to-go">You’re good to go!</span>
                 </div>
             </div>
         </div>
-        <div class="frame-1" style="
-        width: 100%;
-        margin: auto;
-    ">
+        <div class="frame-1" style="    width: 100%;
+        overflow-y: scroll;
+        margin: auto; ">
             <div class="frame-2" style="
         width: 100%;
     ">
-                <div class="frame-3" id="cartItems" style="width: 100%;">
+                <div class="frame-3" id="cartItems" style="width: 100%;overflow-x: hidden;">
                
 
                 </div>
@@ -2044,14 +2047,276 @@
             <div class="rectangle-8c"></div>
         </div>
 
-        <button class="button" style="width: 100%;
-    margin: 0px;">
+        <button class="button" style="    width: 92%;
+        margin: 0px;
+        margin: auto;
+        background: transparent;
+        color: green;
+        border: 2px solid green;
+        border-radius: 5px;
+        position: fixed;
+        bottom: 120px;
+        left: 50%;
+        transform: translate(-50%);">
             <div class="frame-80">
-                <span class="compare-prices" onclick="comparePrices()">Compare Prices</span>
+                <span class="compare-prices" onclick="comparePrices()" style="color:  green;">Compare Prices</span>
             </div>
         </button>
 
         <div id="medicineCollection"></div>
+
+            
+<nav class="mobile-footer" id="footer" role="menulist" style="display: block;margin: auto; font-family: Inter, var(--default-font-family);background: white;">
+	<span id="cartCount" style="position: absolute;
+  background: red;
+  height: 25px;
+  width: 25px;
+  display: block;
+  right: 76px;
+  top: 6px;
+  color: green;
+  background: white;
+  border-radius: 100%;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;font-weight: bold;">99+</span>
+
+  <a href="index.html" role="menuitem"  aria-describedby="nav-current">
+		<svg aria-hidden="true"><use xlink:href="#home-icon"></use></svg> Home
+	</a>
+	<a href="nearbyChemists.html"  role="menuitem">
+		<svg><use xlink:href="#simple-location-icon"></use></svg> Chemists
+	</a>
+	<a href="#!" role="menuitem">
+		<svg aria-hidden="true"><use xlink:href="#plus-icon"></use></svg> Add
+	</a>
+  
+	<a href="/cart" role="menuitem" class="active" style="position: relative;">
+    <svg aria-hidden="true"><use xlink:href="#cart-icon"></use>
+    
+    </svg> 
+    Add Cart
+	</a>
+	<a href="accountPage.html" role="menuitem">
+		<svg aria-hidden="true"><use xlink:href="#user-icon"></use></svg> User
+	</a>
+	<i class="line" id="nav-current">current item</i>
+</nav>
+    
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+	<symbol id="home-icon" viewBox="0 0 9 9">
+		<path d="M7.7 8.5c.3 0 .5-.2.5-.5V3.5c0-.1-.1-.3-.2-.4L4.8.6c-.2-.1-.5-.1-.7 0L1 3.1c-.1.1-.2.3-.2.4V8c0 .3.2.5.5.5h6.4zm-4.8-1h-1V3.8l2.6-2.1 2.6 2.1v3.7H2.9z"/>
+	</symbol>
+	<symbol id="favorites-icon" viewBox="0 0 9 9">
+		<path d="M4.2 8.4C3.8 8 .5 5.2.5 3 .5 1.6 1.6.5 2.9.5c.6 0 1.2.3 1.6.6.4-.4 1-.6 1.6-.6C7.4.5 8.5 1.6 8.5 3c0 2.2-3.3 5-3.7 5.3-.2.2-.5.2-.6.1zM2.9 1.5c-.7 0-1.4.7-1.4 1.5 0 1.1 1.8 3.1 3 4.3 1.1-1 3-3 3-4.3 0-.8-.6-1.5-1.4-1.5-.5 0-.9.3-1.2.7-.2.3-.6.3-.8 0-.3-.4-.7-.7-1.2-.7z"/>
+	</symbol>
+	<symbol id="settings-icon" viewBox="0 0 9 9">
+		<path d="M8.2 5.5l-.7-.4c.1-.4.1-.8 0-1.1l.7-.4c.1 0 .1-.1.1-.2-.2-.7-.5-1.2-.9-1.6-.1-.1-.2-.1-.2 0l-.7.3c-.3-.2-.6-.4-1-.6V.8c0-.1-.1-.2-.2-.2C4.7.5 4.1.5 3.5.6c-.1 0-.2.1-.2.2v.8c-.4.1-.7.3-1 .6l-.5-.5h-.2c-.4.5-.7 1-.9 1.6 0 .1 0 .2.1.2l.7.4c-.1.4-.1.8 0 1.1l-.7.5c-.1 0-.1.1-.1.2.2.6.5 1.1.9 1.5.1.1.2.1.2 0l.7-.4c.3.2.6.4 1 .6v.8c0 .1.1.2.2.2.6.1 1.2.1 1.8 0 .1 0 .2-.1.2-.2v-.8c.4-.1.7-.3 1-.6l.7.4h.2c.4-.4.7-.9.9-1.5-.2-.1-.2-.2-.3-.2zm-3.7.3c-.7 0-1.3-.6-1.3-1.3s.6-1.3 1.3-1.3 1.3.6 1.3 1.3-.6 1.3-1.3 1.3z"/>
+	</symbol>
+	<symbol id="plus-icon" viewBox="0 0 9 9">
+		<path d="M4.9 2.5h-.8v1.6H2.5v.8h1.6v1.6h.8V4.9h1.6v-.8H4.9V2.5zm-.4-2c-2.2 0-4 1.8-4 4s1.8 4 4 4 4-1.8 4-4-1.8-4-4-4zm0 7.2c-1.8 0-3.2-1.4-3.2-3.2s1.4-3.2 3.2-3.2 3.2 1.4 3.2 3.2-1.4 3.2-3.2 3.2z"/>
+	</symbol>
+	<symbol id="cart-icon" viewBox="0 0 24 24">
+    <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zM7.02 6l-.71-3.31C6.2 2.29 5.73 2 5.24 2H2V4h2.24l1.5 7.25c.11.52.59.88 1.13.88h10.59c.52 0 .97-.33 1.14-.82l2.15-6.08c.1-.3.1-.61.02-.91-.09-.3-.3-.54-.57-.66L4.21 6H7.02zm13.78 3.25L18.84 14H8.53l-1.1-5h13.37z"/>
+  </symbol>
+  <symbol id="simple-location-icon" viewBox="0 0 24 24">
+    <path d="M12 2C8.69 2 6 4.69 6 8c0 4.63 6 12 6 12s6-7.37 6-12c0-3.31-2.69-6-6-6zm0 8.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 5.5 12 5.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+  </symbol>
+  
+  
+  <symbol id="bookmark-icon" viewBox="0 0 9 9">
+		<path d="M2.3.5h4.4c.5 0 .9.4.9.9v7.1L4.5 7.2 1.4 8.5V1.4c0-.5.4-.9.9-.9zm2.2 5.7l2.2 1V1.4H2.3v5.8l2.2-1z"/>
+	</symbol>
+	<symbol id="user-icon" viewBox="0 0 9 9">
+		<path d="M5.9 5.3c-.4 0-.7.3-1.4.3s-1-.3-1.4-.3c-1.2 0-2.1.9-2.1 2v.4c0 .4.3.8.8.8h5.5c.4 0 .7-.3.7-.7v-.5c0-1.1-.9-2-2.1-2zm1.4 2.5H1.8v-.5c0-.7.6-1.3 1.3-1.3.2 0 .6.3 1.4.3.8 0 1.2-.3 1.4-.3.7 0 1.3.6 1.3 1.3v.5zM4.5 5c1.2 0 2.3-1 2.3-2.3S5.8.4 4.5.4s-2.3 1-2.3 2.3S3.3 5 4.5 5zm0-3.7c.8 0 1.5.6 1.5 1.5s-.7 1.5-1.5 1.5S3 3.6 3 2.8s.7-1.5 1.5-1.5z"/>
+	</symbol>
+</svg>
+<style>
+  body{
+    margin: 0px;
+    width: 100%;
+  }
+  nav {
+	 border-radius: 0 0 10px 10px;
+   -webkit-box-shadow: 0px -3px 16px 0px rgb(199, 199, 199);
+-moz-box-shadow: 0px -3px 16px 0px rgb(199, 199, 199);
+box-shadow: 0px -3px 16px 0px rgb(199, 199, 199);
+}
+ .mobile-footer {
+	position: fixed;
+    width: 100%;
+    height: 5rem;
+    color: #fff;
+    font-size: 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    padding: 0;
+    background: #34a853;
+    overflow: hidden;
+    bottom: 0px;
+    z-index: 1000;
+}
+ .mobile-footer a {
+	 position: relative;
+	 overflow: hidden;
+	 width: 20%;
+	 height: 100%;
+	 display: inline-block;
+	 float: left;
+	 padding: 0;
+	 color: green;
+	 line-height: 12;
+	 font-size: 0.725em;
+	 text-align: center;
+	 text-decoration: none;
+	 text-indent: -9999rem;
+	 text-overflow: ellipsis;
+	 white-space: nowrap;
+	 will-change: background, line-height;
+	 transition: background 0.15s ease-in-out, line-height 0.2s ease 0.2s;
+}
+ .mobile-footer a:hover, .mobile-footer a:focus {
+	 background-color: rgba(128, 128, 128, 0.3);
+}
+ .mobile-footer a:hover svg, .mobile-footer a:focus svg {
+	 transform: scale(1.25);
+	 opacity: 0.6;
+}
+ .mobile-footer a:focus, .mobile-footer a:active {
+	 outline: none;
+}
+ .mobile-footer a:focus svg, .mobile-footer a:active svg {
+	 opacity: 0.8;
+}
+ .mobile-footer a:active svg {
+	 opacity: 1;
+}
+ .mobile-footer a svg {
+	 position: absolute;
+	 fill: currentColor;
+	 top: calc(30% + 2.5px);
+	 left: 35%;
+	 width: 33%;
+	 height: 33%;
+	 transform: scale(1);
+	 transform-origin: center;
+	 will-change: opacity, transform, top;
+	 transition: opacity 0.2s ease, transform 0.2s ease, top 0.2s ease;
+	 opacity: 0.6;
+	 pointer-events: none;
+}
+ .mobile-footer a.active {
+	 text-indent: 0;
+	 line-height: 10;
+	 transition-delay: 0s, 0s, 0s;
+}
+ .mobile-footer a.active svg {
+	 top: calc(17.5% + 2.5px);
+	 transform-origin: center bottom;
+	 opacity: 1;
+}
+ .mobile-footer a.active:hover svg, .mobile-footer a.active:focus svg, .mobile-footer a.active:active svg {
+	 transform: scale(1);
+}
+ .mobile-footer a.traversing svg {
+	 transition-delay: 0s, 0s, 0s;
+	 animation: 0.15s traversing ease-out both;
+}
+ .mobile-footer .line {
+	 position: absolute;
+	 left: 0;
+	 top: 0;
+	 width: auto;
+	 height: 5px;
+	 text-indent: -9999rem;
+	 transform: translateX(-50%);
+	 border-radius: 2.5px;
+	 background: linear-gradient(63deg, #019143, #55b46e);
+	 transition: left 0.5s ease-out;
+	 z-index: 10;
+}
+ @keyframes traversing {
+	 0% {
+		 opacity: 1;
+	}
+	 100% {
+		 opacity: 0.4;
+	}
+}
+ .mobile-footer.light {
+	 background-color: #d2d2d2;
+	 color: gray;
+}
+ .mobile-footer.light svg {
+	 fill: gray;
+}
+ .mobile-footer.primary {
+	 background: magenta;
+	 color: #fff;
+}
+ .mobile-footer.primary svg {
+	 fill: #fff;
+}
+ 
+</style>
+<script>
+  //  Traversing Magic Line Mobile Footer
+// ------------------------------------
+// Compatibility: IE 10+,  WAI-ARIA recommendations for menulist / current menuitem
+// Author: Crafted in Quarantine, dirkdigweed@gmx.net for host-one.ch
+// Created: 2020.04.06, 12:34h
+// Updated: 2023.08.01, 11:12h
+
+(function mobileFooter (i18n) {
+  var i18n = i18n ? i18n : { current: 'current'},
+      navs = document.querySelectorAll('nav.mobile-footer');
+  [].forEach.call( navs, function (nav, index) {
+    var a = 0, c = 0, i = 1, // active, current, increment
+    links = nav.getElementsByTagName('a'),
+     line = nav.querySelector('.line');      
+    if ( !line ) {
+      line = document.createElement('i');
+      line.setAttribute('aria-hidden', true);
+      line.className = 'line';
+      line.innerHTML  = i18n.current;
+      nav.appendChild(line);
+    }
+    line.id = 'nav-current'+ index;
+    if(!line.innerHTML.length) line.innerHTML = i18n.current;
+    [].forEach.call(links, function (link, index) {   
+      link.removeAttribute('aria-describedby');
+      if (link.className.match(/\bactive\b/g)) place(line, link);
+      link.addEventListener('click', function (e) {
+        a = index;
+        var t = setInterval( function() {
+          links[c].classList.remove('traversing');
+          links[c].classList.remove('active');
+          if (a > c) i = 1;
+          else if (a < c) i = -1;
+          c += i;
+          links[c].classList.add('traversing');
+          if (c != -1) {
+            links[c-i].classList.remove('active');
+          }
+          if (c == a) {
+            e.target.classList.remove('traversing');
+            e.target.classList.add('active')
+            i = 0;
+            clearInterval(t);
+          }
+        }, 100); // Traversing hilite: min: 100ms
+        place(line, e.target);
+      });
+    });
+  });
+  function place(l, a){
+    a.setAttribute('aria-describedby', l.id || 'nav-current');
+    l.style.width = a.offsetWidth +'px'; 
+    l.style.left  = a.offsetLeft + a.offsetWidth/2 +'px';
+  }
+})();
+</script>
+
         <script>
 
 

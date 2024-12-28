@@ -292,7 +292,7 @@ button {
   width: 117.897px;
   height: 47.934px;
   top: 122px;
-  left: 237px;
+  right: 30px;
   font-size: 0px;
   z-index: 11;
 }
@@ -353,7 +353,7 @@ button {
   width: 19.799px;
   height: 11.314px;
   top: 31.485px;
-  left: 336.293px;
+  right: 30px;
   background: url(./assets/images/f472d484-7566-4a44-91b9-41f3641963a4.png)
     no-repeat center;
   background-size: cover;
@@ -499,7 +499,7 @@ button {
 </style>
   </head>
   <body>
-    <div class="main-container">
+    <div class="main-container" style="width: 100%;">
       <div class="rectangle">
         <span class="chemists-near-you">Chemists Near You</span>
         <div class="rectangle-1"></div>
@@ -807,11 +807,11 @@ button {
                   
                 }
                 document.getElementById('chemistList').innerHTML+=`
-                <div class="frame accordion"  style="height: auto;padding-bottom: 10px;">
+                <div class="frame accordion"  style="height: auto;padding-bottom: 10px;width:95%">
        
-        <form action="checkout" method="POST">
-        <div class="group"  id="item${i}" onclick="showContent('item${i}')">
-          <div class="group-4">
+        <form action="checkout" method="POST" style="width:100%">
+        <div class="group"  style="width:100%"  id="item${i}" onclick="showContent('item${i}')">
+          <div class="group-4" style="width:100%">
             <div class="group-5"></div>
             <div class="flex-column-fe">
               <span class="available">Available : 4/5 </span
