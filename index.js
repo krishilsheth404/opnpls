@@ -83,9 +83,9 @@ connectToDb();
 
 // Authentication middleware to validate JWT token
 const authenticateToken = (req, res, next) => {
-    console.log('Request path:', req.path);
-    console.log('Request headers:', req.headers);
-    console.log('Request cookies:', req.cookies);
+    // console.log('Request path:', req.path);
+    // console.log('Request headers:', req.headers);
+    // console.log('Request cookies:', req.cookies);
 
     const token = req.cookies.token || req.headers['authorization'];
     if (!token) {
@@ -99,23 +99,22 @@ const authenticateToken = (req, res, next) => {
             return res.status(403).json({ success: false, message: "Invalid token" });
         }
 
-        console.log('Token verified:', decoded);
         req.userId = decoded.userId;
         next();
     });
 };
 
 
-const serverOptions = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-};
+// const serverOptions = {
+//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+// };
 
-// Create HTTPS server with SSL certificates
-const server = https.createServer(serverOptions, app);
+// // Create HTTPS server with SSL certificates
+// const server = https.createServer(serverOptions, app);
 
 
-// const server = http.createServer();
+const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
@@ -256,12 +255,12 @@ app.get('/login', async (req, res) => {
 // Redirect '/' to '/home' with authentication
 app.get('/', authenticateToken, async (req, res) => {
     console.log('Root endpoint reached');
-    await res.sendFile(__dirname + "/index.html");
+    await res.sendFile(__dirname + "/home.html");
 });
 
 // Authenticate and serve the main page at '/home'
 app.get('/home', authenticateToken, async (req, res) => {
-    await res.sendFile(__dirname + "/index.html");
+    await res.sendFile(__dirname + "/home.html");
 });
 
 
@@ -731,6 +730,37 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
   
 });
 
+
+app.get("/getTotalCartItems", authenticateToken, async (req, res) => {
+    try {
+        const userId = req.userId;  // Assuming the userId is extracted from the token
+
+        // Find the user by their ID
+        const db = client.db("MedicompDb");
+        const collection = db.collection("User");
+
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Count the number of distinct items in the cart (no need to consider quantity)
+        const distinctItemsCount = user.cartItems ? user.cartItems.length : 0;
+
+        // Return the distinct item count
+        res.json({
+            success: true,
+            totalItems: distinctItemsCount
+        });
+
+    } catch (error) {
+        console.error("Error fetching total cart items:", error);
+        res.status(500).json({ success: false, message: "Server error!" });
+    }
+});
+
+
 app.get("/order-updates", authenticateToken, async (req, res) => {
     const orderId = req.query.orderId;
     const userId = req.userId;
@@ -770,6 +800,7 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
 
 
 app.post("/addItemToCart", authenticateToken, async (req, res) => {
+    console.log("Sa")
     const { productId } = req.body; // Assuming phone is provided to identify the user
     if (!productId) {
         return res.status(400).json({ success: false, message: "Product ID is required!" });
@@ -813,6 +844,89 @@ app.post("/addItemToCart", authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: "Server error!" });
     }
 });
+
+app.post("/removeItemFromCart", authenticateToken, async (req, res) => {
+    const { productId } = req.body; // The product ID to remove from the cart
+    if (!productId) {
+        return res.status(400).json({ success: false, message: "Product ID is required!" });
+    }
+
+    try {
+        // Find the user by userId (passed through authenticateToken middleware)
+        const db = client.db("MedicompDb");
+        const collection = db.collection("User");
+
+        const userId = new ObjectId(req.userId);
+
+        const user = await collection.findOne({ _id: userId });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Check if the product exists in the user's cart
+        const existingItem = user.cartItems.find(item => item.productId === productId);
+
+        if (!existingItem) {
+            return res.status(404).json({ success: false, message: "Product not found in cart!" });
+        }
+
+        // Remove the item from the cart using the $pull operator
+        await collection.updateOne(
+            { _id: userId },
+            { $pull: { cartItems: { productId: productId } } }
+        );
+
+        res.json({ success: true, message: "Product removed from cart!" });
+    } catch (error) {
+        console.error("Error removing item from cart:", error);
+        res.status(500).json({ success: false, message: "Server error!" });
+    }
+});
+
+app.post("/updateCartItem", authenticateToken, async (req, res) => {
+    const { cartItemId, qty } = req.body; // Extract cartItemId and qty from the request body
+
+    if (!cartItemId || qty === undefined) {
+        return res.status(400).json({ success: false, message: "cartItemId and qty are required!" });
+    }
+
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("User");
+
+        const userId = req.userId; // Assuming the user ID is extracted from the token
+
+        // Find the user by userId
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Find the index of the item in the user's cart based on cartItemId (productId)
+        const cartItemIndex = user.cartItems.findIndex(item => item.productId === cartItemId);
+
+        if (cartItemIndex === -1) {
+            return res.status(404).json({ success: false, message: "Item not found in the cart!" });
+        }
+
+        // Update the quantity of the found cart item
+        user.cartItems[cartItemIndex].quantity = qty;
+
+        // Save the updated cart back to the database
+        await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { cartItems: user.cartItems } }
+        );
+
+        res.json({ success: true, message: "Cart item quantity updated successfully!" });
+    } catch (error) {
+        console.error("Error updating cart item:", error);
+        res.status(500).json({ success: false, message: "Server error!" });
+    }
+});
+
 
 // Port configuration
 const port = process.env.PORT || 4000;
