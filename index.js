@@ -82,22 +82,31 @@ async function connectToDb() {
 connectToDb();
 
 // Authentication middleware to validate JWT token
+const unauthenticatedRoutes = ['/manifest.json'];
+
 const authenticateToken = (req, res, next) => {
+    if (unauthenticatedRoutes.includes(req.path)) {
+        return next(); // Bypass authentication
+    }
     // console.log('Request path:', req.path);
     // console.log('Request headers:', req.headers);
     // console.log('Request cookies:', req.cookies);
 
     const token = req.cookies.token || req.headers['authorization'];
     if (!token) {
+        req.isAuthenticated = false;
         console.error('No token provided.');
-        return res.redirect('/landing');
+        return res.redirect('/landingPage.html');
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
         if (err) {
+            req.isAuthenticated = false;
             console.error('JWT verification failed:', err.message);
             return res.status(403).json({ success: false, message: "Invalid token" });
         }
+
+        req.isAuthenticated = true;
 
         req.userId = decoded.userId;
         next();
@@ -105,16 +114,16 @@ const authenticateToken = (req, res, next) => {
 };
 
 
-const serverOptions = {
-    cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
-    key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
-};
+// const serverOptions = {
+//     cert: fs.readFileSync('/etc/letsencrypt/live/openpills.com/fullchain.pem'),
+//     key: fs.readFileSync('/etc/letsencrypt/live/openpills.com/privkey.pem')
+// };
 
-// Create HTTPS server with SSL certificates
-const server = https.createServer(serverOptions, app);
+// // Create HTTPS server with SSL certificates
+// const server = https.createServer(serverOptions, app);
 
 
-// const server = http.createServer();
+const server = http.createServer();
 const io = socketIo(server);
 
 const db = client.db('MedicompDb');
@@ -184,11 +193,11 @@ io.on('connection', (socket) => {
             // alert(`Your order was rejected: ${message.reason}`);
             // Update the UI, show an option to upload a new prescription
         });
-       
+
         socket.on('updateOrderStatusFromChemist', async (data) => {
             const status = data.status;
 
-            const orderId = data.orderId; 
+            const orderId = data.orderId;
 
 
             console.log("Order Status Updated For " + orderId)
@@ -244,17 +253,30 @@ server.listen(8080, () => {
 
 
 
-app.get('/landing', async (req, res) => {
-      
-    await res.sendFile(__dirname + "/landingPage.html");
-})
+app.get('/landing', authenticateToken, async (req, res) => {
+    try {
+        // Check if the user is authenticated
+        if (req.isAuthenticated) {
+            // Redirect to /home if authenticated
+            return res.redirect('/home');
+        }
+
+        // Otherwise, serve the landing page
+        res.sendFile(__dirname + "/landingPage.html");
+    } catch (error) {
+        console.error('Error in landing page route:', error);
+        res.status(500).send('An error occurred.');
+    }
+});
+
+
 app.get('/login', async (req, res) => {
     await res.sendFile(__dirname + "/registrationPage.html");
 })
 
 // Redirect '/' to '/home' with authentication
 app.get('/', authenticateToken, async (req, res) => {
-    console.log('Root endpoint reached');
+    // console.log('Root endpoint reached');
     await res.sendFile(__dirname + "/home.html");
 });
 
@@ -269,9 +291,31 @@ app.get('/locationIcon.svg', authenticateToken, async (req, res) => {
 })
 
 // Route to fetch medicine name data
-app.get('/medicineName', async (req, res) => {
+app.get('/medicineName', authenticateToken, async (req, res) => {
     const db = client.db("MedicompDb");
     const collection = db.collection("biggerDOM");
+
+    const userCartCollection = db.collection("User");
+
+    const userId = new ObjectId(req.userId);
+
+    const user = await userCartCollection.findOne({ _id: userId });
+
+    var userCart = [];
+    // console.log(user.cartItems[0].productId)
+    // console.log(await collectionForMedicineDetails.findOne({ _id: user.cartItems[0].productId }))
+    for (var items = 0; items < user.cartItems.length; items++) {
+        var tempId = new ObjectId(user.cartItems[items].productId);
+        var taemp = await collection.findOne({ _id: tempId });
+
+        var tempItem = {};
+        tempItem._id = taemp._id;
+        tempItem.quantity = user.cartItems[items].quantity;
+
+        // Push the modified item into the userCart array
+        userCart.push(tempItem);
+    }
+    // console.log(userCart)
 
     try {
         const records = await collection.aggregate([
@@ -307,6 +351,21 @@ app.get('/medicineName', async (req, res) => {
         ]).toArray();
 
         if (records.length > 0) {
+
+
+            for (var i = 0; i < userCart.length; i++) {
+
+                for (var j = 0; j < records.length; j++) {
+                    // console.log(records[j]._id.toString())
+
+                    if (records[j]._id.toString()==userCart[i]._id.toString()){
+                        records[j].exists=true;
+                        records[j].quantity=userCart[i].quantity;
+                    }
+                    }
+            }
+
+
             res.send(records);
         } else {
             const recordsFallback = await collection.aggregate([
@@ -348,6 +407,19 @@ app.get('/medicineName', async (req, res) => {
                 },
                 { $limit: 10 }
             ]).toArray();
+
+
+            for (var i = 0; i < userCart.length; i++) {
+
+                for (var j = 0; j < recordsFallback.length; j++) {
+                    // console.log(records[j]._id.toString())
+
+                    if (recordsFallback[j]._id.toString()==userCart[i]._id.toString()){
+                        recordsFallback[j].exists=true;
+                        recordsFallback[j].quantity=userCart[i].quantity;
+                    }
+                    }
+            }
 
             res.send(recordsFallback);
         }
@@ -404,10 +476,10 @@ app.post("/login", async (req, res) => {
 
 app.get("/cart-items", authenticateToken, async (req, res) => {
     try {
-        const db =  client.db("MedicompDb");
-        const collection =  db.collection("User");
+        const db = client.db("MedicompDb");
+        const collection = db.collection("User");
 
-        const collectionForMedicineDetails =  db.collection("biggerDOM");
+        const collectionForMedicineDetails = db.collection("biggerDOM");
 
         // Fetch user by the ID stored in the token
         const userId = new ObjectId(req.userId);
@@ -420,14 +492,14 @@ app.get("/cart-items", authenticateToken, async (req, res) => {
         for (var items = 0; items < user.cartItems.length; items++) {
             var tempId = new ObjectId(user.cartItems[items].productId);
             var tempItem = await collectionForMedicineDetails.findOne({ _id: tempId });
-        
+
             // Add quantity to the item
             tempItem.quantity = user.cartItems[items].quantity;
-        
+
             // Push the modified item into the userCart array
             userCart.push(tempItem);
         }
-        
+
 
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
@@ -459,23 +531,54 @@ app.get("/comparison", authenticateToken, async (req, res) => {
 
 });
 
+
+app.get("/comparisonRepeatOrder/:orderId", authenticateToken, async (req, res) => {
+    const { orderId } = req.params;
+
+    const finalData = { orderId: orderId }; // Example data
+
+
+    res.render(__dirname + '/comparisonPageRepeatOrder.ejs', {
+            final:finalData// Convert object to string
+        });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
+
+});
+
+
+
 app.post("/checkout", authenticateToken, async (req, res) => {
 
 
     console.log(req.body)
-    const db =  client.db("MedicompDb");
-    const collection =  db.collection("User");
+
+    if(typeof(req.body.medicineNames)=='string'){
+        req.body.medicineNames=[req.body.medicineNames];
+    }
+    if(typeof(req.body.qty)=='string'){
+        req.body.qty=[req.body.qty];
+    }
+    if(typeof(req.body.medicinePrices)=='string'){
+        req.body.medicinePrices=[req.body.medicinePrices];
+    }
+    if(typeof(req.body.medicinePackSize)=='string'){
+        req.body.medicinePackSize=[req.body.medicinePackSize];
+    }
+    if(typeof(req.body.medicineId)=='string'){
+        req.body.medicineId=[req.body.medicineId];
+    }
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
 
     // Fetch user by the ID stored in the token
     // const userId = new ObjectId(req.userId);
     // const user = await collection.findOne({ _id: userId });
 
     // console.log(user)
-    console.log("User Id -> "+req.userId)
+    console.log("User Id -> " + req.userId)
 
-    
-    
-    res.render(__dirname+'/finalCheckoutPage.ejs', {
+
+
+    res.render(__dirname + '/finalCheckoutPage.ejs', {
         final: JSON.stringify(req.body, null, 2) // Convert object to string
     });    // await res.sendFile(__dirname + "/finalcheckoutpage.html");
 
@@ -483,98 +586,103 @@ app.post("/checkout", authenticateToken, async (req, res) => {
 
 
 app.post("/compareCartItems", authenticateToken, async (req, res) => {
-    
-    try{
-    const db =  client.db("MedicompDb");
-    const collection =  db.collection("User");
 
-    const collectionForMedicineDetails =  db.collection("biggerDOM");
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("User");
 
-    // Fetch user by the ID stored in the token
-    const userId = new ObjectId(req.userId);
+        const collectionForMedicineDetails = db.collection("biggerDOM");
 
-    const user = await collection.findOne({ _id: userId });
+        // Fetch user by the ID stored in the token
+        const userId = new ObjectId(req.userId);
 
-    var userCart = [];
-    // console.log(user.cartItems[0].productId)
-    // console.log(await collectionForMedicineDetails.findOne({ _id: user.cartItems[0].productId }))
-    for (var items = 0; items < user.cartItems.length; items++) {
-        var tempId = new ObjectId(user.cartItems[items].productId);
-        var tempItem = await collectionForMedicineDetails.findOne({ _id: tempId });
-    
-        // Add quantity to the item
-        tempItem.quantity = user.cartItems[items].quantity;
-    
-        // Push the modified item into the userCart array
-        userCart.push(tempItem);
-    }
-    
+        const user = await collection.findOne({ _id: userId });
 
-    if (!user) {
-        return res.status(404).json({ success: false, message: "User not found" });
-    }
+        var userCart = [];
+        // console.log(user.cartItems[0].productId)
+        // console.log(await collectionForMedicineDetails.findOne({ _id: user.cartItems[0].productId }))
+        for (var items = 0; items < user.cartItems.length; items++) {
+            var tempId = new ObjectId(user.cartItems[items].productId);
+            var tempItem = await collectionForMedicineDetails.findOne({ _id: tempId });
 
+            // Add quantity to the item
+            tempItem.medicineId = tempId;
+            tempItem.quantity = user.cartItems[items].quantity;
 
-    // const chemistIds = ["chemist123-token"]; // Example IDs
-    const chemistsCollection = db.collection('LocalChemists');
-
-    const chemistIds = await chemistsCollection.distinct('chemistId');
-
-
-    // Function to fetch data for a single chemist
-    const fetchDataFromChemist = async (chemistId) => {
-        const chemist = await chemistsCollection.findOne({ chemistId });
-
-        if (!chemist) {
-            console.log(`Unauthorized or unknown chemist: ${chemistId}`);
-            return { chemistId, error: "Unauthorized or unknown chemist" };
+            // Push the modified item into the userCart array
+            userCart.push(tempItem);
         }
 
-        const chemistSocket = io.sockets.sockets.get(chemist.socketID);
+      
 
-        if (!chemistSocket) {
-            console.log(`Chemist ${chemistId} socket not found.`);
-            return { chemistId, error: "Chemist socket not found" };
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
         }
 
-        // Emit fetchData event and wait for response
-        return new Promise((resolve, reject) => {
-            chemistSocket.emit("fetchData", { authToken: chemist.authToken, userCart }, (response) => {
-                if (response) {
-                    console.log(`Data received from Chemist ${chemistId}:`, response);
-                    resolve({ chemistId, data: response }); // Return response with chemistId
-                } else {
-                    reject(new Error(`No response from chemist ${chemistId}.`));
-                }
+
+        // const chemistIds = ["chemist123-token"]; // Example IDs
+        const chemistsCollection = db.collection('LocalChemists');
+
+        const chemistIds = await chemistsCollection.distinct('chemistId');
+
+
+        // Function to fetch data for a single chemist
+        const fetchDataFromChemist = async (chemistId) => {
+            const chemist = await chemistsCollection.findOne({ chemistId });
+
+            if (!chemist) {
+                console.log(`Unauthorized or unknown chemist: ${chemistId}`);
+                return { chemistId, error: "Unauthorized or unknown chemist" };
+            }
+
+            const chemistSocket = io.sockets.sockets.get(chemist.socketID);
+
+            if (!chemistSocket) {
+                console.log(`Chemist ${chemistId} socket not found.`);
+                return { chemistId, error: "Chemist socket not found" };
+            }
+
+            var chemistName=chemist.chemistName;
+            // Emit fetchData event and wait for response
+            console.log(userCart)
+            return new Promise((resolve, reject) => {
+                chemistSocket.emit("fetchData", { authToken: chemist.authToken, userCart }, (response) => {
+                    if (response) {
+                        console.log(`Data received from Chemist ${chemistId}:`, response);
+                        resolve({ chemistId,chemistName, data: response }); // Return response with chemistId
+                    } else {
+                        reject(new Error(`No response from chemist ${chemistId}.`));
+                    }
+                });
             });
+        };
+
+        // Use Promise.all to fetch data from all chemists in parallel
+        const chemistResponses = await Promise.all(
+            chemistIds.map((chemistId) =>
+                fetchDataFromChemist(chemistId).catch((error) => ({
+                    chemistId,
+                    error: error.message,
+                }))
+            )
+        );
+
+        console.log("Response form chemsit")
+        // Send combined response to the user
+        res.json({
+            success: true,
+            responses: chemistResponses, // Array of responses from each chemist
         });
-    };
 
-    // Use Promise.all to fetch data from all chemists in parallel
-    const chemistResponses = await Promise.all(
-        chemistIds.map((chemistId) =>
-            fetchDataFromChemist(chemistId).catch((error) => ({
-                chemistId,
-                error: error.message,
-            }))
-        )
-    );
-
-    // Send combined response to the user
-    res.json({
-        success: true,
-        responses: chemistResponses, // Array of responses from each chemist
-    });
-        
         // res.render('comparisonPage', { data: responseData||[] });
-        
-        
+
+
     } catch (err) {
         console.error('Error requesting data from chemist:', err);
         return res.status(500).json({ error: 'Failed to request data from chemist.' });
     }
-    
-    
+
+
 });
 
 
@@ -585,33 +693,47 @@ app.post("/compareCartItems", authenticateToken, async (req, res) => {
 const multer = require('multer');
 const upload = multer(); // Memory storage if you want to store the file temporarily in memory
 
-app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (req, res) => {
+app.post('/placeOrder', authenticateToken, upload.single('prescription'), async (req, res) => {
     console.log(req.body)
     console.log(req.file)
-    const { medicineList, chemistId } = req.body;
-    const db =  client.db("MedicompDb");
+    const { medicineList, chemistId,medicineQty,medicineId } = req.body;
+    console.log(medicineQty)
+    const db = client.db("MedicompDb");
     const chemistsCollection = db.collection('LocalChemists');
+    const collection = db.collection("User");
 
     const chemist = await chemistsCollection.findOne({ chemistId });
-
-
-    var realtimeCartData={};
-
+    
+    
+    
+    var realtimeCartData = {};
+    
     console.log('Place Order endpoint hit');
-
+    
     // const { customerName, phoneNumber, address, medicineList, chemistId, authToken } = req.body;
-    var customerName="krishil"
-    var phoneNumber="9372677245"
-    var address="Gowalia Tank"
-    var authToken="auth"
-    var prescription = req.file; 
+    const userId = req.userId;
+    const user = await collection.findOne({ _id: new ObjectId(userId) });
+    console.log(user)
+    console.log(user.cartIems)
+    var customerName = user.name;
+    var phoneNumber = user.phone;
+
+    const selectedAddress = user.savedAddresses.find(address => address.selected);
+
+        if (!selectedAddress) {
+            return res.status(404).json({ success: false, message: "No selected address found!" });
+        }
+
+
+    var address = selectedAddress;
+    var prescription = req.file;
 
     prescription = prescription ? prescription : "Not Required";
 
     console.log("Prescription : " + prescription)
 
     // Validate the incoming data
-    if (!customerName || !phoneNumber || !address || !medicineList || !chemistId || !authToken) {
+    if (!customerName || !phoneNumber || !address || !medicineList || !chemistId) {
         console.log('Missing required fields');
         return res.status(400).json({ error: 'All fields are required.' });
     }
@@ -624,23 +746,43 @@ app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (
 
 
         const orderId = `Order_${count}`;
-        
-        realtimeCartData.orderId=orderId;
 
+        realtimeCartData.orderId = orderId;
+
+        
         const newOrder = {
             orderId: `Order_${count}`,
+            customerId:req.userId,
             customerName,
             phoneNumber,
-            address: address.replace(/['"`]/g, ''),
+            address: address.fullAddress,
+            lat: address.lat,
+            lng: address.lng,
             medicineList,
+            medicineId:medicineId,
+            medicineQty,
             prescription: prescription, // You can save the binary data here or a link to the file
             chemistId,
-            authToken,
             status: 'Pending', // Initial status
             createdAt: new Date(),
-            PrescriptionVerified: (prescription=="Not Required" ? "Done" : "Pending"),
+            PrescriptionVerified: (prescription == "Not Required" ? "Done" : "Pending"),
         };
-
+        
+        if(typeof(newOrder.medicineList)=="string"){
+            newOrder.medicineList=[newOrder.medicineList];
+        }
+        if(typeof(newOrder.medicineQty)=="string"){
+            newOrder.medicineQty=[newOrder.medicineQty];
+        }
+        if(typeof(newOrder.medicinePrices)=="string"){
+            newOrder.medicinePrices=[newOrder.medicinePrices];
+        }
+        if(typeof(newOrder.medicinePackSize)=="string"){
+            newOrder.medicinePackSize=[newOrder.medicinePackSize];
+        }
+        if(typeof(newOrder.medicineId)=="string"){
+            newOrder.medicineId=[newOrder.medicineId];
+        }
 
         // Emit the order data to the chemist via WebSocket
         const chemistsCollection = db.collection('LocalChemists');
@@ -664,16 +806,22 @@ app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (
             const result = await ordersCollection.insertOne({
                 _id: `Order_${count}`,
                 orderId: `Order_${count}`,
+                customerId:req.userId,
                 customerName,
                 phoneNumber,
-                address: address.replace(/['"`]/g, ''),
+                address: address.fullAddress,
+                lat: address.lat,
+                lng: address.lng,
                 medicineList,
+                medicineId:medicineId,
+                medicineQty,
+                prescription,
                 chemistId,
-                customerToken:req.userId,
+                customerToken: req.userId,
                 status: 'Pending', // Initial status
                 createdAt: new Date(),
-                PrescriptionVerified:(prescription=="Not Required" ? "Done" : "Pending"),
-        
+                PrescriptionVerified: (prescription == "Not Required" ? "Done" : "Pending"),
+
             });
             console.log('Order inserted into MongoDB:', result); // Log successful DB insert
 
@@ -694,7 +842,7 @@ app.post('/placeOrder',authenticateToken, upload.single('prescription'), async (
 
     } catch (err) {
         console.error('Error placing order:', err);
-        console.log(err.code)   
+        console.log(err.code)
         // res.status(500).json({ error: 'Failed to place order.' });
     }
 });
@@ -711,23 +859,30 @@ app.get("/order-status-page", authenticateToken, async (req, res) => {
         return res.status(400).send("Order ID is required");
     }
     // Example order data (replace this with your database query logic)
-    
-    const db =  client.db("MedicompDb");
+
+    const db = client.db("MedicompDb");
     const ordersCollection = db.collection('Orders');
 
     // Ensure the user has access to this order
     const userOk = await ordersCollection.findOne({ customerToken: userId });
-    const orderOk = await ordersCollection.findOne({ orderId: orderId});
+    const orderOk = await ordersCollection.findOne({ orderId: orderId });
 
-    if (!orderOk|| !userOk) {
+    if (!orderOk || !userOk) {
         return res.status(403).send("You are not authorized to access this order.");
     }
 
-    res.render(__dirname+'/orderStatusPage2.ejs', {
+    if(typeof(orderOk.medicineList)=="string"){
+        orderOk.medicineList=[orderOk.medicineList];
+    }
+    if(typeof(orderOk.medicineQty)=="string"){
+        orderOk.medicineQty=[orderOk.medicineQty];
+    }
+
+    res.render(__dirname + '/orderStatusPage2.ejs', {
         final: JSON.stringify(orderOk, null, 2),
         orderId: orderId
-   });
-  
+    });
+
 });
 
 
@@ -768,7 +923,7 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
     if (!orderId) {
         return res.status(400).send("Order ID is required");
     }
-    
+
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -791,9 +946,9 @@ app.get("/order-updates", authenticateToken, async (req, res) => {
         console.log(`Client disconnected for Order ${orderId}`);
         activeConnections[orderId] = activeConnections[orderId].filter((clientRes) => clientRes !== res);
     });
-  
 
-    
+
+
 });
 
 
@@ -821,13 +976,14 @@ app.post("/addItemToCart", authenticateToken, async (req, res) => {
         }
 
         // Check if the product is already in the user's cart
-        const existingItem = user.cartItems.find(item => item.productId === productId);
+        // console.log(productId)
+        const existingItem = user.cartItems.find(item => item.productId.toString() === productId);
 
-        console.log(existingItem)
+        // console.log(existingItem)
         if (existingItem) {
             // If product exists, just increment the quantity
             await collection.updateOne(
-                { userId, "cartItems.productId": productId },
+                { userId, "cartItems.productId": existingItem.productId },
                 { $inc: { "cartItems.$.quantity": 1 } }
             );
             res.json({ success: true, message: "Product quantity updated!" });
@@ -926,6 +1082,465 @@ app.post("/updateCartItem", authenticateToken, async (req, res) => {
         res.status(500).json({ success: false, message: "Server error!" });
     }
 });
+
+
+app.get('/getUserAddresses',authenticateToken, async (req, res) => {
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
+
+    const userId = req.userId; // Assuming the user ID is extracted from the token
+
+    // Find the user by userId
+    const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found!" });
+    }
+
+    // res.send(user.savedAddresses)
+    res.json({ success: true, message: user.savedAddresses });
+})
+
+app.get('/getCurrentSelectedAddress', authenticateToken, async (req, res) => {
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
+
+    const userId = req.userId; // Assuming the user ID is extracted from the token
+
+    try {
+        // Find the user by userId
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Find the address with selected: true
+        const selectedAddress = user.savedAddresses.find(address => address.selected);
+
+        if (!selectedAddress) {
+            return res.status(404).json({ success: false, message: "No selected address found!" });
+        }
+
+        // Return the selected address
+        res.json({ success: true, message: selectedAddress });
+    } catch (error) {
+        console.error("Error fetching selected address:", error);
+        res.status(500).json({ success: false, message: "Internal server error!" });
+    }
+});
+
+
+app.post('/updateSelectedAddress', authenticateToken, async (req, res) => {
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
+
+    const userId = req.userId; // Extracted from the token
+    const { addressId } = req.body; // `addressId` sent in the request body
+
+    try {
+        // Find the user by userId
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Update savedAddresses to set all `selected` fields to false
+        user.savedAddresses.forEach(address => {
+            address.selected = false;
+        });
+
+        // Find the address with the given addressId and set its `selected` to true
+        const updatedAddress = user.savedAddresses.find(address => address.address_id === addressId);
+        if (updatedAddress) {
+            updatedAddress.selected = true;
+        } else {
+            return res.status(404).json({ success: false, message: "Address ID not found!" });
+        }
+
+        // Update the user's savedAddresses in the database
+        await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { savedAddresses: user.savedAddresses } }
+        );
+
+        res.json({ success: true, message: "Address selection updated successfully!", updatedAddress });
+    } catch (error) {
+        console.error("Error updating selected address:", error);
+        res.status(500).json({ success: false, message: "Internal server error!" });
+    }
+});
+
+app.post('/saveNewAddress', authenticateToken, async (req, res) => {
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
+
+    
+    const userId = req.userId; // Assuming the user ID is extracted from the token
+    const { category, fullAddress, lat, lng } = req.body;
+    console.log(req.body)
+
+    // Validation
+    if (!category || !fullAddress || !lat || !lng) {
+        return res.status(400).json({ success: false, message: "All fields are required!" });
+    }
+
+    try {
+        // Find the user by userId
+        const user = await collection.findOne({ _id: new ObjectId(userId) });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found!" });
+        }
+
+        // Get the list of saved addresses
+        const savedAddresses = user.savedAddresses || [];
+        
+        // Get the last address_id and increment it
+        let newAddressId = "userAddress_001";
+        if (savedAddresses.length > 0) {
+            const lastAddress = savedAddresses[savedAddresses.length - 1];
+            const lastId = lastAddress.address_id;
+            const lastIndex = parseInt(lastId.split('_')[1]);
+            newAddressId = `userAddress_${String(lastIndex + 1).padStart(3, '0')}`;
+        }
+
+        user.savedAddresses.forEach(address => {
+            address.selected = false;
+        });
+
+        await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { "savedAddresses.$[].selected": false } } // Set `selected` to false for all addresses
+        );
+
+        // Create the new address object
+        const newAddress = {
+            category,
+            fullAddress,
+            lat,
+            lng,
+            address_id: newAddressId,
+            selected: true // New addresses are not selected by default
+        };
+
+        // Update the user's savedAddresses array
+        const result = await collection.updateOne(
+            { _id: new ObjectId(userId) },
+            { $push: { savedAddresses: newAddress } }
+        );
+
+        if (result.modifiedCount === 0) {
+            return res.status(404).json({ success: false, message: "Failed to save address!" });
+        }
+
+        res.status(201).json({ success: true, message: "Address saved successfully!", address: newAddress });
+    } catch (error) {
+        console.error("Error saving address:", error);
+        res.status(500).json({ success: false, message: "Internal server error!" });
+    }
+});
+
+
+app.get('/getCurrentOrders', authenticateToken, async (req, res) => {
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("Orders");
+        
+        const customerToken = req.userId; // Assuming customerToken is stored in the token as `userId`
+
+        // Fetch orders matching customerToken and status 'Pending'
+        const orders = await collection.find({ 
+            customerToken, 
+            status: { $in: ["Pending", "Out For Delivery"] } // Matches either status
+        }).toArray();
+        
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No pending orders found for this user.' 
+            });
+        }
+
+        
+        res.json({ success: true, orders });
+
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching orders.'
+        });
+    }
+});
+app.get('/getCancelledOrders', authenticateToken, async (req, res) => {
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("Orders");
+        
+        const customerToken = req.userId; // Assuming customerToken is stored in the token as `userId`
+
+        // Fetch orders matching customerToken and status 'Pending'
+        const orders = await collection.find({ 
+            customerToken, 
+            status: "Cancelled" 
+        }).toArray();
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No pending orders found for this user.' 
+            });
+        }
+
+        // Render EJS page with filtered orders
+        res.json({ success: true, orders });
+
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching orders.'
+        });
+    }
+});
+app.get('/getCompletedOrders', authenticateToken, async (req, res) => {
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("Orders");
+        
+        const customerToken = req.userId; // Assuming customerToken is stored in the token as `userId`
+
+        // Fetch orders matching customerToken and status 'Pending'
+        const orders = await collection.find({ 
+            customerToken, 
+            status: "Completed" 
+        }).toArray();
+
+        if (!orders || orders.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'No pending orders found for this user.' 
+            });
+        }
+
+        // Render EJS page with filtered orders
+        res.json({ success: true, orders });
+
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+        res.status(500).json({
+            success: false,
+            message: 'An error occurred while fetching orders.'
+        });
+    }
+});
+
+
+app.get('/prescription/:orderId',authenticateToken, async (req, res) => {
+    const { orderId } = req.params;
+    const user=req.userId;
+
+
+    if (!user) {
+        return res.status(404).json({ success: false, message: "User not found!" });
+    }
+
+    try {
+        const db = client.db("MedicompDb");
+        const collection = db.collection("Orders");
+
+        // Find the order by orderId
+        const order = await collection.findOne({ orderId });
+        if (!order || !order.prescription || !order.prescription.buffer ) {
+            return res.status(404).send("Prescription not found.");
+        }
+
+        // Set the content type to match the image's MIME type
+        res.contentType(order.prescription.mimetype);
+        res.send(order.prescription.buffer.buffer); // Send the binary image buffer
+    } catch (error) {
+        console.error("Error fetching prescription:", error);
+        res.status(500).send("Error fetching prescription.");
+    }
+});
+
+
+
+app.get("/compareCartItemsFromRepeatOrder/:orderId", authenticateToken, async (req, res) => {
+
+    const db = client.db("MedicompDb");
+    const collection = db.collection("User");
+
+    const collectionForMedicineDetails = db.collection("biggerDOM");
+    const collectionForOrders = db.collection("Orders");
+
+    const { orderId } = req.params;
+    console.log(orderId)
+    
+    const order = await collectionForOrders.findOne({ orderId: orderId });
+
+    console.log(order)
+    try {
+
+        var medicineId=order.medicineId;
+        var quantity=order.medicineQty;
+        var medicineName=order.medicineList;
+
+
+        // Fetch user by the ID stored in the token
+        const userId = new ObjectId(req.userId);
+
+        const user = await collection.findOne({ _id: userId });
+
+        if(typeof(medicineId)=="string"){
+            medicineId=[medicineId];
+        }
+        if(typeof(quantity)=="string"){
+            quantity=[quantity];
+        }
+        if(typeof(medicineName)=="string"){
+            medicineName=[medicineName];
+        }
+
+        console.log(quantity)
+
+        var userCart=[];
+        // console.log(user.cartItems[0].productId)
+        // console.log(await collectionForMedicineDetails.findOne({ _id: user.cartItems[0].productId }))
+        for (var items = 0; items < medicineName.length; items++) {
+            var tempId = new ObjectId(medicineId[items]);
+            var tempItem = await collectionForMedicineDetails.findOne({ _id: tempId });
+
+            // Add quantity to the item
+            tempItem.quantity = quantity[items];
+
+            // Push the modified item into the userCart array
+            userCart.push(tempItem);
+        }
+
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+
+        // const chemistIds = ["chemist123-token"]; // Example IDs
+        const chemistsCollection = db.collection('LocalChemists');
+
+        const chemistIds = await chemistsCollection.distinct('chemistId');
+
+
+        // Function to fetch data for a single chemist
+        const fetchDataFromChemist = async (chemistId) => {
+            const chemist = await chemistsCollection.findOne({ chemistId });
+
+            if (!chemist) {
+                console.log(`Unauthorized or unknown chemist: ${chemistId}`);
+                return { chemistId, error: "Unauthorized or unknown chemist" };
+            }
+
+            const chemistSocket = io.sockets.sockets.get(chemist.socketID);
+
+            if (!chemistSocket) {
+                console.log(`Chemist ${chemistId} socket not found.`);
+                return { chemistId, error: "Chemist socket not found" };
+            }
+
+            var chemistName=chemist.chemistName;
+            // Emit fetchData event and wait for response
+            console.log(userCart)
+            return new Promise((resolve, reject) => {
+                chemistSocket.emit("fetchData", { authToken: chemist.authToken, userCart }, (response) => {
+                    if (response) {
+                        console.log(`Data received from Chemist ${chemistId}:`, response);
+                        resolve({ chemistId,chemistName, data: response }); // Return response with chemistId
+                    } else {
+                        reject(new Error(`No response from chemist ${chemistId}.`));
+                    }
+                });
+            });
+        };
+
+        // Use Promise.all to fetch data from all chemists in parallel
+        const chemistResponses = await Promise.all(
+            chemistIds.map((chemistId) =>
+                fetchDataFromChemist(chemistId).catch((error) => ({
+                    chemistId,
+                    error: error.message,
+                }))
+            )
+        );
+
+        // Send combined response to the user
+        res.json({
+            success: true,
+            responses: chemistResponses, // Array of responses from each chemist
+        });
+
+        // res.render('comparisonPage', { data: responseData||[] });
+
+
+    } catch (err) {
+        console.error('Error requesting data from chemist:', err);
+        return res.status(500).json({ error: 'Failed to request data from chemist.' });
+    }
+
+
+});
+
+
+app.get('/fetchById/:id', authenticateToken, async (req, res) => {
+    try {
+        const db = client.db('MedicompDb');
+        const collection = db.collection('biggerDOM');
+        const usersCartCollection = db.collection('User');
+        
+        const { id } = req.params;
+        const userId = req.userId; // Assuming user ID is available from authentication middleware
+
+        // Validate and convert _id to ObjectId
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid ID format' });
+        }
+
+        // Fetch medicine data
+        const medicineData = await collection.findOne({ _id: new ObjectId(id) });
+
+        if (!medicineData) {
+            return res.status(404).send('Medicine not found');
+        }
+
+        // Check if the product exists in the user's cart
+        const userCart = await usersCartCollection.findOne({ _id: new ObjectId(userId) });
+
+        if (userCart && userCart.cartItems) {
+            const cartItem = userCart.cartItems.find(item => item.productId === id);
+
+            if (cartItem) {
+                medicineData.exists = true;
+                medicineData.quantity = cartItem.quantity; // Add quantity if exists
+            } else {
+                medicineData.exists = false;
+            }
+        } else {
+            medicineData.exists = false;
+        }
+
+        console.log(medicineData)
+        // Render the EJS page with the updated data
+        res.render(__dirname + '/singleMedicinePage.ejs', {
+            final: medicineData
+        });
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        res.status(500).json({ success: false, message: 'An error occurred while fetching the document.' });
+    }
+});
+
+
 
 
 // Port configuration

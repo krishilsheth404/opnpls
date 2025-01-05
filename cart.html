@@ -2053,7 +2053,6 @@
     ">
                     <div class="frame-3" id="cartItems" style="width: 100%;overflow-x: hidden;"></div>
                 </div>
-                <div class="rectangle-8c"></div>
             </div>
             <button class="button" style="    width: 92%;
         margin: 0px;
@@ -2572,7 +2571,8 @@ async function updateCartInDatabase(cartItemId,qty) {
                                         </div>
                                     </div>
                                 </div>
-                                <span class="yellow-cherry-tomatoes">${response.data.cartItems[k].medicineName.slice(0,30)+"..."}</span><span class="euro-per-kg">${response.data.cartItems[k].packSize}</span>
+                                <span class="yellow-cherry-tomatoes">${response.data.cartItems[k].medicineName.slice(0,30)+"..."}</span>
+                                <span class="euro-per-kg">${response.data.cartItems[k].packSize}</span>
                             </div>
                         </div>
                         <div class="vector-1d"></div>

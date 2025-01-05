@@ -9,6 +9,7 @@
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link rel="manifest" href="manifest.json">
 
 
 <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
@@ -3393,6 +3394,8 @@ z-index: 250;
   margin: auto;
   border-radius: 5px;
             }
+
+            
    </style><style>
 
 .oderstrasse-berlin {
@@ -3665,7 +3668,7 @@ background: url(./assets/images/da3bd72f-6035-4821-bbf2-aee11ccb3714.png)
 background-size: cover;
 z-index: 34;
 }
-.chicken-schnitzel {
+.forefront-block {
 display: flex;
 align-items: flex-start;
 justify-content: flex-start;
@@ -5850,8 +5853,26 @@ z-index: 238;
     <div class="flex-row-e" style="width: 100%;">
       <div class="frame">
         <div class="frame-1">
-          <span class="good-morning">Good Morning, 👋🏼</span><span class="krishil">Krishil</span>
+          <span class="good-morning" id="greeting"></span><span class="krishil">Krishil</span>
         </div>
+        <script>
+          const currentHour = new Date().getHours();
+
+          // Set the greeting based on the time of day
+          let greeting;
+
+          if (currentHour >= 0 && currentHour < 12) {
+              greeting = "Good Morning, 👋🏼";
+          } else if (currentHour >= 12 && currentHour < 18) {
+              greeting = "Good Afternoon, 👋🏼";
+          } else {
+              greeting = "Good Evening, 👋🏼";
+          }
+
+          // Display the greeting
+          document.getElementById("greeting").innerText = greeting;
+
+        </script>
       </div>
       <div class="shopping-cart" style="right: 60px;left: auto;">
         <i class="bx bx-cart-alt" style="font-size: 23px;"></i>
@@ -5861,8 +5882,8 @@ z-index: 238;
     <div class="frame-4" style="    align-items: center;
   justify-content: space-between;width: 95%;">
       <div class="frame-5">
-        <span class="oderstrasse"><a href="editdeliveryaddress.html" style="text-decoration: none;color: #019143;">
-          Gowalia Tank , Mumbai
+        <span class="oderstrasse"><a href="editdeliveryaddress.html" id="userAddress" style="text-decoration: none;color: #019143;">
+          Locating...
         </a>
       </span>
         <div class="group"></div>
@@ -6029,17 +6050,28 @@ width: 4px; /* Set the desired thinness */
           <div class="rectangle-2b" style="
     width: 100%;
     background: linear-gradient(63deg, #00612d, #55b46e);
-    height: 100%;
-"></div>
+    height: 100%;display: flex;
+    align-items: center;
+    justify-content: space-around;
+">
+  <img src="chemist.png" alt="" style="height: 30px;width: 30px;filter: invert(1);margin: 10px;">
+  <span style="color: white;width: 70%;text-align: start;font-family: Inter, var(--default-font-family);font-size: 14px;">View Nearby Chemists</span>
+</div>
         </div>
         <div class="group-28" style="width: 43%;height: 100%;">
           
           <div class="image"></div>
           <div class="group-2a"></div>
           <div class="rectangle-2b" style="
-    width: 100%;
-    height: 100%;
-"></div>
+          width: 100%;
+          background: linear-gradient(63deg, #00612d, #55b46e);
+          height: 100%;display: flex;
+          align-items: center;
+          justify-content: space-around;
+      ">
+       <i class='bx bx-capsule' style="height: 30px;width: 30px;color: white;font-size: 27px;margin-left: 10px;"></i>
+        <span style="color: white;width: 70%;text-align: start;font-family: Inter, var(--default-font-family);font-size: 14px;">Buy & Compare Medicines</span>
+      </div>
         </div>
       </div><div class="hideOut" style="    height: 233px;
   overflow: hidden;margin-top: 20px;border-radius: 30px;">
@@ -6410,13 +6442,13 @@ width: 4px; /* Set the desired thinness */
   background: white;
   border-radius: 100%;
   font-size: 10px;
-  display: flex
-;
+  display: flex;
+  opacity: 0.7;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   color: white;
-  background: green;">0</span>
+  background: green;"></span>
 
   <a href="home.html" role="menuitem" class="active"  aria-describedby="nav-current">
 		<svg aria-hidden="true"><use xlink:href="#home-icon"></use></svg> Home
@@ -6510,6 +6542,7 @@ box-shadow: 0px -3px 16px 0px rgb(199, 199, 199);
 	 white-space: nowrap;
 	 will-change: background, line-height;
 	 transition: background 0.15s ease-in-out, line-height 0.2s ease 0.2s;
+   background: transparent;
 }
  .mobile-footer a:hover, .mobile-footer a:focus {
 	 background-color: rgba(128, 128, 128, 0.3);
@@ -6652,6 +6685,9 @@ box-shadow: 0px -3px 16px 0px rgb(199, 199, 199);
   }
 })();
 </script>
+
+
+
 
   <script>
     var map = L.map('map').setView([19.0760, 72.8777], 12); // Set initial view to Mumbai
@@ -6834,6 +6870,38 @@ if (!localStorage.getItem('locationAsked')) {
 <script>
 
 window.onload = async function() {
+ 
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+        .register('/serviceworker.js')
+        .then((registration) => {
+            console.log('Service Worker registered with scope:', registration.scope);
+        })
+        .catch((error) => {
+            console.error('Service Worker registration failed:', error);
+        });
+}
+
+
+  try {
+        // Send a GET request to fetch the total items in the cart
+        const response = await axios.get('/getCurrentSelectedAddress');
+        
+        // Check if the request was successful
+        if (response.data.success) {
+            // Update the innerHTML of the cartCount element with the total items count
+            console.log(response.data.message.fullAddress)
+            document.getElementById('userAddress').innerHTML = response.data.message.fullAddress.slice(0,30)+"...";
+        } else {
+            // Handle the error if cart count retrieval fails
+            console.error("Failed to fetch cart items count");
+        }
+    } catch (error) {
+        // Handle any errors from the API request
+        console.error("Error fetching total cart items:", error);
+    }
+
+
     try {
         // Send a GET request to fetch the total items in the cart
         const response = await axios.get('/getTotalCartItems');
@@ -6850,7 +6918,11 @@ window.onload = async function() {
         // Handle any errors from the API request
         console.error("Error fetching total cart items:", error);
     }
+
+
 };
+
+
 
 
 
@@ -6910,130 +6982,155 @@ async function addItemToCart(productId,cls) {
 
   function startCounter(cls) {
     // Attach event listeners at a higher level (e.g., document or a common parent container)
-    document.getElementById(`changeQuantityButton_${cls}`).addEventListener("click", function(event) {
-                        handleButtonClick(event, cls);
-                    });
-
-    document.getElementById(`changeQuantityButton_${cls}`).addEventListener("input", function(event) {
-                        handleInputChange(event, cls);
-                    });
-
-    async function handleButtonClick(event,cls) {
-
-      var ti=document.getElementById(`changeQuantityButton_${cls}`).getAttribute('itemid');
-
-      try {
+    try {
       
-        // Check if the clicked element is a minus or plus button
-        if (event.target.classList.contains("minus") || event.target.classList.contains("plus")) {
-            const quantityContainer = event.target.closest(".quantity");
-            if (!quantityContainer) return;
-
-            const inputBox = quantityContainer.querySelector(".input-box");
-            const minusBtn = quantityContainer.querySelector(".minus");
-            const plusBtn = quantityContainer.querySelector(".plus");
-
-            let value = parseInt(inputBox.value);
-            const max = parseInt(inputBox.max) || Infinity;
-
-            // Adjust the value based on the button type
-            if (event.target.classList.contains("minus")) {
-                value = isNaN(value) ? 1 : Math.max(value - 1, 0); // Allow value to go to 0 temporarily
-                if (value < 1) {
-                    console.log("Cooled")
-                    deleteItem(quantityContainer);
-                    return;
-                }
-            } else if (event.target.classList.contains("plus")) {
-                value = isNaN(value) ? 1 : Math.min(value + 1, max);
-            }
-
-            inputBox.value = value;
-
-            // Update button states
-            // minusBtn.disabled = value <= 1;
-            plusBtn.disabled = value >= max;
-
-            await updateCartInDatabase(ti,inputBox.value)
-        }
-
-
-          
-      } catch (error) {
-       console.log(error)  
-      }
+      document.getElementById(`changeQuantityButton_${cls}`).addEventListener("click", function(event) {
+        handleButtonClick(event, cls);
+      });
+      
+      document.getElementById(`changeQuantityButton_${cls}`).addEventListener("input", function(event) {
+        handleInputChange(event, cls);
+      });
+    } catch (error) {
+       console.log(error)
     }
+  }
 
-   async function handleInputChange(event,cls) {
-      var ti=document.getElementById(`changeQuantityButton_${cls}`).getAttribute('itemid');
+    
+  async function handleButtonClick(event,cls) {
 
-        // Check if the input event is on an input-box
-        if (event.target.classList.contains("input-box")) {
-            const inputBox = event.target;
-            const quantityContainer = inputBox.closest(".quantity");
-            const minusBtn = quantityContainer.querySelector(".minus");
-            const plusBtn = quantityContainer.querySelector(".plus");
+var ti=document.getElementById(`changeQuantityButton_${cls}`).getAttribute('itemid');
 
-            let value = parseInt(inputBox.value);
-            const max = parseInt(inputBox.max) || Infinity;
+console.log(ti)
+console.log("Hello ji")
+try {
 
-            // Validate the value
-            value = isNaN(value) ? 1 : Math.max(0, Math.min(value, max));
-            inputBox.value = value;
+  // Check if the clicked element is a minus or plus button
+  if (event.target.classList.contains("minus") || event.target.classList.contains("plus")) {
+      const quantityContainer = event.target.closest(".quantity");
+      if (!quantityContainer) return;
 
-            if (value < 1) {
-                deleteItem(quantityContainer);
-                console.log("called")
-                return;
-            }
+      const inputBox = quantityContainer.querySelector(".input-box");
+      const minusBtn = quantityContainer.querySelector(".minus");
+      const plusBtn = quantityContainer.querySelector(".plus");
 
-            // Update button states
-            // minusBtn.disabled = value <= 1;
-            plusBtn.disabled = value >= max;
-            await updateCartInDatabase(ti,inputBox.value)
+      let value = parseInt(inputBox.value);
+      const max = parseInt(inputBox.max) || Infinity;
 
-        }
-    }
-
-   
-
-    async function deleteItem(quantityContainer) {
-        // Remove the item from the DOM
-        // document.getElementById('cartCount').in
-        // nerHTML=parseInt(document.getElementById('cartCount').innerHTML)-1
-
-        
-        document.getElementById('cartCount').innerHTML=parseInt(document.getElementById('cartCount').innerHTML)-1
-
-        
-
-        const itemRow = quantityContainer.closest(".frame-5");
-        console.log(itemRow.getAttribute('clsnum'));
-        var ti=(`button-redo_${itemRow.getAttribute('clsnum')}`);
-
-        
-        if (itemRow) {
-          itemRow.remove();
-          console.log("Item deleted:", itemRow);
-        }
-        
-        document.getElementById(ti).style.display='flex';
-        
-        // Optionally, update backend or cart data
-        // For example, make an AJAX call to delete the item from the cart
-        var productId=(document.getElementById(ti).getAttribute('ItemId'))
-
-        const response = await axios.post('/removeItemFromCart', { productId });
-          if (response.data.success) {
-              console.log("Product deleted from cart successfully!");
-          } else {
-              console.log("Failed to delete product from cart.");
+      // Adjust the value based on the button type
+      if (event.target.classList.contains("minus")) {
+          value = isNaN(value) ? 1 : Math.max(value - 1, 0); // Allow value to go to 0 temporarily
+          if (value < 1) {
+              console.log("Cooled")
+              deleteItem(quantityContainer);
+              return;
           }
+      } else if (event.target.classList.contains("plus")) {
+          value = isNaN(value) ? 1 : Math.min(value + 1, max);
+      }
+
+      inputBox.value = value;
+
+      // Update button states
+      // minusBtn.disabled = value <= 1;
+      plusBtn.disabled = value >= max;
+
+      await updateCartInDatabase(ti,inputBox.value)
+  }
 
 
-        console.log("Item removed from cart!");
-    }
+    
+} catch (error) {
+ console.log(error)  
 }
+}
+
+async function handleInputChange(event,cls) {
+var ti=document.getElementById(`changeQuantityButton_${cls}`).getAttribute('itemid');
+console.log(ti)
+console.log("Hello ji")
+
+  // Check if the input event is on an input-box
+  if (event.target.classList.contains("input-box")) {
+      const inputBox = event.target;
+      const quantityContainer = inputBox.closest(".quantity");
+      const minusBtn = quantityContainer.querySelector(".minus");
+      const plusBtn = quantityContainer.querySelector(".plus");
+
+      let value = parseInt(inputBox.value);
+      const max = parseInt(inputBox.max) || Infinity;
+
+      // Validate the value
+      value = isNaN(value) ? 1 : Math.max(0, Math.min(value, max));
+      inputBox.value = value;
+
+      if (value < 1) {
+          deleteItem(quantityContainer);
+          console.log("called")
+          return;
+      }
+
+      // Update button states
+      // minusBtn.disabled = value <= 1;
+      plusBtn.disabled = value >= max;
+      await updateCartInDatabase(ti,inputBox.value)
+
+  }
+}
+
+
+
+async function deleteItem(quantityContainer) {
+  // Remove the item from the DOM
+  // document.getElementById('cartCount').in
+  // nerHTML=parseInt(document.getElementById('cartCount').innerHTML)-1
+
+  const itemRow = quantityContainer.closest(".frame-5");
+  console.log(itemRow.getAttribute('clsnum'));
+  var ti=(`button-redo_${itemRow.getAttribute('clsnum')}`);
+
+  
+  if (itemRow) {
+    itemRow.remove();
+    console.log("Item deleted:", itemRow);
+  }
+  
+  document.getElementById(ti).style.display='flex';
+  
+  // Optionally, update backend or cart data
+  // For example, make an AJAX call to delete the item from the cart
+  var productId=(document.getElementById(ti).getAttribute('ItemId'))
+
+  var response = await axios.post('/removeItemFromCart', { productId });
+    if (response.data.success) {
+        console.log("Product deleted from cart successfully!");
+    } else {
+        console.log("Failed to delete product from cart.");
+    }
+
+    try {
+  // Send a GET request to fetch the total items in the cart
+    
+  
+  response = await axios.get('/getTotalCartItems');
+      
+      // Check if the request was successful
+      if (response.data.success) {
+          // Update the innerHTML of the cartCount element with the total items count
+          document.getElementById('cartCount').innerHTML = response.data.totalItems;
+      } else {
+          // Handle the error if cart count retrieval fails
+          console.error("Failed to fetch cart items count");
+      }
+  } catch (error) {
+      // Handle any errors from the API request
+      console.error("Error fetching total cart items:", error);
+  }
+
+
+  console.log("Item removed from cart!");
+}
+
 
 
 
@@ -7056,47 +7153,96 @@ async function addItemToCart(productId,cls) {
                   document.getElementById("searchRes").innerHTML=``;
                   
                   
+
+
                   await axios({
                       method: "GET",
                       url: `/medicineName?q=${document.getElementById('q').value + ' '}`,
                   })
-                      .then((res) => {
+                      .then(async (res) => {
                         console.log(res.data)
                         for (var i = 0; i < res.data.length; i++) {
 
                           document.getElementById("searchRes").innerHTML+=`
                           <div class="group-a">
-        <div class="group-b" >
-          <div class="group-c" style="background: url(crocin.jpeg);
-          background-position: center;
-          background-repeat: no-repeat;
-          background-size: contain;    box-shadow: 0px 3px 1px #e2e2e2;
-          border-radius: 10px;"></div>
-       
-          <span class="chicken-schnitzel" style="top: 15px;font-weight: 600;">${res.data[i].medicineName}</span>
-          <div class="price-per-kg" style="top: 51px;">
-            <span class="price-value" style="font-size: 11px;">${res.data[i].packSize}</span>
-          </div>
-          <div id="changeQuantityButton_${i}" itemid="${res.data[i]._id}" style="width:auto;float:right;">
-          <button itemId="${res.data[i]._id}" onclick="addItemToCart('${res.data[i]._id}','${i}')" id="button-redo_${i}"  style="position: absolute;
-          right: 25px;
-          top: 60px;
-          border: 1px solid #34a853;
-          border-radius: 5px;
-          background: none;
-          height: 25px;
-          width: 27px;
-          font-size: 23px;
-          display: flex
-      ;
-          align-items: center;
-          justify-content: center;
-          color: #34a853;"><span>+</span></button> <div>
-        </div>
-        <div class="group-15"><div class="vector-16"></div></div>
-      </div>
+                            <div class="group-b" >
+                              <div class="group-c" style="background: url(crocin.jpeg);
+                              background-position: center;
+                              background-repeat: no-repeat;
+                              background-size: contain;    box-shadow: 0px 3px 1px #e2e2e2;
+                              border-radius: 10px;"></div>
+                          
+                              <span class="forefront-block" style="top: 15px;font-weight: 600;">${res.data[i].medicineName}</span>
+                              <div class="price-per-kg" style="top: 51px;">
+                                <span class="price-value" style="font-size: 11px;">${res.data[i].packSize}</span>
+                              </div>
+                              <div id="changeQuantityButton_${i}" class="impdiv" itemid="${res.data[i]._id}" style="width:auto;float:right;">
+                              <button itemId="${res.data[i]._id}" onclick="addItemToCart('${res.data[i]._id}','${i}')" id="button-redo_${i}"  style="position: absolute;
+                              right: 25px;
+                              top: 60px;
+                              border: 1px solid #34a853;
+                              border-radius: 5px;
+                              background: none;
+                              height: 25px;
+                              width: 27px;
+                              font-size: 23px;
+                              display: flex
+                          ;
+                              align-items: center;
+                              justify-content: center;
+                              color: #34a853;"><span>+</span></button>
+                            <div class="group-15"><div class="vector-16"></div></div>
+                          </div>
                           `;
+
+                          if(res.data[i].exists){
+
+                           console.log(res.data[i].exists)
+                            var parentElement=document.getElementById(`changeQuantityButton_${i}`);
+                          const button = parentElement.querySelector('button'); // Adjust the selector if necessary
+
+                          // Check if the button exists
+                          if (button) {
+                              // Set the display property to 'none'
+                              button.style.display = 'none';
+                          }
+
+                         
+
+                          const quantityHTML = `
+                <div class="frame-5" clsnum="${i}" style="height: 100%; display: flex; align-items: center; 
+                  justify-content: center; float:right;">
+                  <div class="frame-6" style="width: auto; margin:auto; padding:0px; margin-bottom:10px;">
+                    <div class="quantity" style="box-shadow: none; border: none;">
+                      <button class="minus" style="border-radius: 5px;" aria-label="Decrease">−</button>
+                      <input type="number" style="background-color: transparent; color: #0d7429;" 
+                        class="input-box" value="${res.data[i].quantity}" min="1" max="10">
+                      <button class="plus" style="border-radius: 5px;" aria-label="Increase">+</button>
+                    </div>
+                  </div>
+                </div>
+              `;
+              parentElement.innerHTML += quantityHTML;
+
+              
+                        
+
+                      }
+                      
+
                             }
+
+                            document.querySelectorAll('.impdiv').forEach((parentElement, i) => {
+                                  parentElement.addEventListener("click", async function(event) {
+                                    await handleButtonClick(event, i);
+                                  });
+
+                                  parentElement.addEventListener("input", async function(event) {
+                                    await handleInputChange(event, i);
+                                  });
+                                });
+
+
                       })
 
                   }
@@ -7108,10 +7254,13 @@ async function addItemToCart(productId,cls) {
 
 
 
+
+
 </script>
 
 
 </body> 
+
 
 
 

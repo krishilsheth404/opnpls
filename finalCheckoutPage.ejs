@@ -38,6 +38,9 @@
 .main-container {
   overflow: hidden;
 }
+body{
+  margin:0px;
+}
 
 .main-container,
 .main-container * {
@@ -1104,8 +1107,7 @@ button {
   height: 52px;
   margin: 40px 0 0 14px;
   z-index: 77;
-  overflow: visible auto;
-}
+ }
 .ellipse {
   position: relative;
   width: 5px;
@@ -1341,25 +1343,181 @@ button {
 
 <form action="/placeOrder" method="POST" enctype="multipart/form-data">
 
-      <div class="container" style="width: 100%;">
+
+     <div class="container" style="width: 100%;">
         <div class="flex-column-dd" style="width: 100%;">
-          <span class="ca">Numbai</span>
+          <span class="ca" id="fullAddress" style="text-wrap: auto;
+          height: auto;
+          width: 75%;"></span>
           <div class="rectangle-2"> </div>
-          <span class="san-francisco-bay-area">Gowalia Tank , Grant Road</span>
-          <div class="chevron-down"><i class='bx bx-chevron-right' style="font-size: 23px;"></i></div>
+            <span class="san-francisco-bay-area" id="category">Locating...</span>
         </div>
-        <div class="expanded-radius-icon"><i class='bx bxs-location-plus' style="font-size: 23px;" ></i></div>
+        <div class="expanded-radius-icon"><i class='bx bxs-location-plus' style="font-size: 23px;color:black" ></i></div>
       </div>
+  
+
+  <!-- for getting user's current location -->
+  <script>
+    
+window.onload = async function() {
+  try {
+        // Send a GET request to fetch the total items in the cart
+        const response = await axios.get('/getCurrentSelectedAddress');
+        
+        // Check if the request was successful
+        if (response.data.success) {
+            // Update the innerHTML of the cartCount element with the total items count
+            console.log(response.data.message.fullAddress)
+            document.getElementById('fullAddress').innerHTML = response.data.message.fullAddress.slice(0,50)+"...";
+            document.getElementById('category').innerHTML = response.data.message.category;
+        } else {
+            // Handle the error if cart count retrieval fails
+            console.error("Failed to fetch cart items count");
+        }
+    } catch (error) {
+        // Handle any errors from the API request
+        console.error("Error fetching total cart items:", error);
+    }
+  }
+    const enableButton = document.getElementById("enableLocation");
+    const locationOutput = document.getElementById("locationOutput");
+
+    enableButton.addEventListener("click", () => {
+        if ("geolocation" in navigator) {
+            // locationOutput.innerHTML = "Getting location...";
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+
+                    // Display latitude and longitude
+                    // locationOutput.innerHTML = `
+                    //     <p><strong>Latitude:</strong> ${latitude}</p>
+                    //     <p><strong>Longitude:</strong> ${longitude}</p>
+                    // `;
+
+                   
+                    // Fetch detailed address using Nominatim
+                    try {
+                        const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error("Unable to fetch address.");
+                        const data = await response.json();
+
+                        // Extract details
+                        const address = data.display_name || "Address not available";
+                        const pincode = data.address.postcode || "Pincode not available";
+                        const city = data.address.city || data.address.town || "City not available";
+
+                        console.log(address);
+                    console.log(pincode);
+                    console.log(position.coords);
+                    
+                        // Update location details
+
+                        // locationOutput.innerHTML += `
+                        //     <p><strong>Address:</strong> ${address}</p>
+                        //     <p><strong>Pincode:</strong> ${pincode}</p>
+                        //     <p><strong>City:</strong> ${city}</p>
+                        // `;
+                    } catch (error) {
+                        console.error(error);
+                        // locationOutput.innerHTML += "<p>Unable to fetch address details.</p>";
+                    }
+                },
+                (error) => {
+                    // Handle geolocation errors
+                    // locationOutput.innerHTML = `<p>Error: ${error.message}</p>`;
+                }
+            );
+        } else {
+            locationOutput.innerHTML = "<p>Geolocation is not supported by your browser.</p>";
+        }
+    });
+</script>
+
+
+ <!-- For AutoComplete Address -->
+ <script>
+  let debounceTimer; // Variable to track the debounce timer
+
+  async function getAutocomplete(query) {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&countrycodes=IN&format=json&addressdetails=1&limit=5`);
+      if (!response.ok) throw new Error("API error");
+      const data = await response.json();
+      // Return detailed results including display_name and pincode
+      return data.map(item => ({
+        display_name: item.display_name,
+        pincode: item.address.postcode || "N/A",
+        city: item.address.city || item.address.town || item.address.village || "N/A",
+        latitude: item.lat,
+        longitude: item.lon,
+    }));
+  }
+
+  // Autocomplete input event listener
+  const inputField = document.getElementById("addressInput");
+  const suggestionBox = document.getElementById("autoCompleteAddresses");
+
+  inputField.addEventListener("input", (e) => {
+      clearTimeout(debounceTimer); // Clear previous timer
+      const query = e.target.value;
+
+      if (query.length < 3) {
+          suggestionBox.style.paddingBottom = `0px`;
+          suggestionBox.innerHTML = ``;
+          return;
+      }
+
+      // Set a new timer for 300ms
+      debounceTimer = setTimeout(async () => {
+          try {
+              const suggestions = await getAutocomplete(query);
+              console.log(suggestions); // Log suggestions for debugging
+
+              // Create and display suggestions
+              if (suggestions.length > 0) {
+                  suggestionBox.style.paddingBottom = `10px`;
+                  const suggestionsHTML = suggestions.map(item => `
+                      <div class="suggestion-item" style="padding: 10px;
+    font-family: var(--default-font-family);
+    margin-bottom: 10px;
+    margin-top: 10px;cursor:pointer" onclick="selectAddress('${item.display_name}', '${item.city}')">
+                          <strong>${item.city}</strong> <br>
+                          <small>${item.display_name}</small>
+                      </div>
+                  `).join('');
+                  suggestionBox.innerHTML = suggestionsHTML;
+              } else {
+                  suggestionBox.innerHTML = `<div class="suggestion-item">No results found</div>`;
+              }
+          } catch (error) {
+              console.error("Error fetching suggestions:", error);
+              suggestionBox.innerHTML = `<div class="suggestion-item">Error fetching results</div>`;
+          }
+      }, 300); // 300ms debounce delay
+  });
+
+  // Function to handle selection of an address
+  function selectAddress(displayName, city) {
+      inputField.value = `${city} , ${displayName}`;
+      suggestionBox.innerHTML = ``; // Clear suggestions
+  }
+</script>
+
 
        <hr style="width: 80%;
        /* background: lightgray; */
        border: none;
        border-top: 1px dotted lightgray;">
       <div class="laxmi-chemists">
-        <input type="text" name="chemistId" id="chemistId" class="laxmi-chemists-3" style="display: block;
+        <input type="text" name="chemistId" id="chemistId" class="laxmi-chemists-3" style="display: none;
         border: none;
         font-size: 23px;
         font-weight: 600;" value="<%= parsedFinal.chemistId %>">
+          <input type="text" name="chemistName" id="chemistName" class="laxmi-chemists-3" style="display: block;
+          border: none;
+          font-size: 23px;
+          font-weight: 600;" value="<%= parsedFinal.chemistName %>">
         </span>
       </div>
       <div class="flex-row-ce" style="width: 89%;">
@@ -1372,18 +1530,46 @@ button {
         margin: auto;
         margin-top: 20px;"></div>
 
+
+
 <hr style="margin-top: 40px;width: 80%;
 /* background: lightgray; */
 border: none;
 border-top: 1px dotted lightgray;">
 
+
+<div class="div-promotion-banner" style="width: 92%;
+margin: auto;
+margin-top: 30px;
+height: max-content;
+border-radius: 5px;">
+       <span class="span-extra-discount">Upload Prescription</span>
+       <div class="div-flex-row-dffa">
+         <div class="div-ellipse-9"></div>
+         <span class="min-order-delivery">Upload Your Prescription Here</span>
+       </div>
+       <div class="flex-row-e-a" style="margin: auto;margin-top: 20px;
+   margin-bottom: 20px;">
+         <input type="file" id="prescription" style="width:100%" name="prescription" value="Upload Prescription" accept="image/*"  class="button-b">
+         
+         <style>
+           input::file-selector-button {
+background:transparent;
+border:none
+}
+
+           </style>
+       </div>
+     </div>
+
+     
+
       <div class="flex-row-e" style="width: 89%;">
-        <span class="your-items">Your items</span
-        ><span class="see-menu">see menu</span>
+        <span class="your-items">Your items</span>
       </div>
       
       
-      <div id="cartSection" style="width: 92%;margin: auto;">
+      <div id="cartSection" style="width: 100%;margin: auto;">
 
         <div class="cartItems">
             
@@ -1391,65 +1577,82 @@ border-top: 1px dotted lightgray;">
                 <div class="cartItem">
 
                     <div class="flex-row-c" style="width: 92%;">
-                      <div class="rectangle-6"><input class="span" name="medicineQty" id="medicineQty" style="display: block;
+                      <div class="rectangle-6" style="width: 100%;
+                      max-width: 35px;
+                      min-width: 35px;border-radius: 5px;background: linear-gradient(63deg, #019143, #55b46e);">
+                        <input class="span" name="medicineQty" id="medicineQty" style="display: block;
                         border: none;
                         font-size: large;
                         font-weight: 500;
                         width: 14px;
                         margin: auto;
-                        left: 50%;
-                        transform: translate(-50%);background:transparent" value="1"></div>
+                        /* left: 5%; */
+                        transform: translate(-50%);
+                        background: transparent;
+                        font-size: 13px;
+                        width: -webkit-fill-available;
+                        max-width: 35px;
+                        width: auto;
+                        text-align: center;
+                        margin-left: 5px;color:white;font-weight: 600;" value="<%=parsedFinal.qty[i]%>"></div>
 
-                      <input type="text" readonly name="medicineList" id="medicineList" style="display: block;
+                      <input type="text" readonly  style="display: block;
                       border: none;
                       font-size: medium;
                       font-weight: 500;
                       width: auto" class="span-cantina-crispy-chicken" value="<%=parsedFinal.medicineNames[i].slice(0,20) %>...">
+                     
+                     <input type="text" readonly name="medicineList" id="medicineList" style="display: none;
+                      border: none;
+                      font-size: medium;
+                      font-weight: 500;
+                      width: auto" class="span-cantina-crispy-chicken" value="<%=parsedFinal.medicineNames[i] %>">
+                    
+                    <input type="text" readonly name="medicineId" id="medicineId" style="display: none;
+                      border: none;
+                      font-size: medium;
+                      font-weight: 500;
+                      width: auto" class="span-cantina-crispy-chicken" value="<%=parsedFinal.medicineId[i] %>">
                       
-                      <span class="span-us-dollar" style="left: auto;right: 10px;">US$13.18</span>
+                      <span class="span-us-dollar" style="left: auto;right: 10px;">₹ <%=parsedFinal.medicinePrices[i] %></span>
                       <div class="div-promotions"><div class="div-vector"></div></div>
                     </div>    
                     <div class="div-flex-row-ece" style="width: 80%;">
-                      <span class="span-wings-side-of-celery">6 Wings Side of Celery</span
-                      ><span class="span-us-dollar-7" style="left: auto;right: 10px;">US$13.18</span>
+                      <span class="span-wings-side-of-celery"><%=parsedFinal.medicinePackSize[i] %></span
+                      >
                       <div class="div-ellipse"></div>
                       <div class="div-ellipse-8"></div>
                     </div>
-                    <span class="span-ranch-dip">Ranch Dip</span>
+                 
                     <div class="div-separator"></div>
                   </div>
               <% } %>
     </div>
  
- <div class="div-promotion-banner" style="width: 92%;
-      margin: auto;
-      margin-top: 30px;">
-        <span class="span-extra-discount">Upload Prescription</span>
-        <div class="div-flex-row-dffa">
-          <div class="div-ellipse-9"></div>
-          <span class="min-order-delivery">Upload Your Prescription Here</span>
-        </div>
-        <div class="flex-row-e-a" style="margin-top:40px">
-          <input type="file" id="prescription" style="width:100%" name="prescription" value="Upload Prescription" accept="image/*"  class="button-b">
-          
-            <span class="shop-now">Upload</span> 
-          <style>
-            input::file-selector-button {
- background:transparent;
- border:none
-}
+    <a href="./home.html" style="text-decoration: none;">
+      <div class="button" style="border-radius: 10px;">
+        <div class="div-plus" style="    height: auto;
+      width: auto;
+      font-size: 17px;
+      display: flex
+      ;
+      align-items: center;
+      justify-content: center;"><i class='bx bx-plus-circle'></i></div>
+      <span class="span-add-more-items">Add More Items </span>
+    </div>
+  </a>
 
-            </style>
-        </div>
-      </div>
+
+<hr style="margin-top: 40px;width: 80%;
+/* background: lightgray; */
+border: none;
+border-top: 1px dotted lightgray;">
+
 
         </div>
 
 
-      <button class="button">
-        <div class="div-plus"></div>
-        <span class="span-add-more-items">Add More Items </span>
-      </button>
+     
       <div class="div-promotion-banner" style="width: 92%;
       margin: auto;
       margin-top: 30px;">
@@ -1503,18 +1706,37 @@ border-top: 1px dotted lightgray;">
         <div class="chevron-down-14"></div>
       </div>
       <span style="    width: 92%;
-    margin: auto;" class="confirmation-message"
+    margin: auto;margin-bottom:100px" class="confirmation-message"
         >After Placing The Order , You WIll Receive A Confirmation Call After
         Which Your Order Will Be Forwarded To The Requested <br />Chemist.</span
       >
-      <div class="flex-row-b-15" style="width: 92%;">
-        <div class="ellipse"></div>
-        <div class="large-button" style="
-    width: 100%;
-">
+
+      <div style="  width: 100%;
+      position: fixed;
+      bottom: 10px;
+      z-index: 100000;
+      /* left: 50%; */
+      /* transform: translate(-50%); */
+      display: block;
+      margin: auto;
+      box-shadow: -1px 1px 10px #aaaaaa;
+      background: white;
+      bottom: 0px;
+      display: flex;
+      align-items: center;
+      justify-content: center;bottom:0px">
+      <div class="flex-row-b-15" style="width: revert-layer;
+      margin-top: 20px;
+      margin-bottom: 20px;
+      /* margin-left: auto; */
+      display: flex;
+      align-items: center;
+      justify-content: center;">
+        <div class="large-button">
           <input type="submit" class="place-order" onclick="submitOrder()" value="Place Order ₹321.71">
         </div>
       </div>
+    </div>
 
 
       <div class="separator"></div>

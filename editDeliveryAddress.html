@@ -7,6 +7,16 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uber+Move+Text:wght@400;500&display=swap" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+          
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js" integrity="sha512-LUKzDoJKOLqnxGWWIBM4lzRBlxcva2ZTztO8bTcWPmDSpkErWx0bSP4pdsjNH8kiHAUPaT06UXcb+vOEZH+HpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.js" integrity="sha512-A/D/17S8jG62ka9f3jPwMs+bKGJ1f/xQts7bAUjTIKQf0anTGjlpuEz3q9q++3qRAVYKS3iVx6KzM8GPtIaYfw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cheerio/0.22.0/index.js" integrity="sha512-+obmGUxyA+OfXW4RU7Ez2JBbCFy+dmZatW/Z5u/PDZlY+SKzAMSHzpNfTDohw7RFfW+zmLrI9h19XiODWZRO5A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cheerio/0.22.0/index.min.js" integrity="sha512-e0BgZBWe7/3JF1To6KxVcaoki2aQd3f6aWyRf9R+dOPgDUfn7czha9/wLHzNgVmUaORT2cEq+lyjxjoQmPEiHA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+
   </head>
   <style>
     :root {
@@ -624,7 +634,7 @@ button {
 
   </style>
   <body>
-    <div class="main-container" style="width: 100%;">
+    <div class="main-container" style="width: 100%;height: 100%;">
       <div class="iphone-x">
         <div class="left-side">
           <div class="time"><div class="colon"></div></div>
@@ -646,7 +656,7 @@ button {
         </div>
       </div>
     
-      <div class="rectangle-1" style="display: flex;align-items: center;width: 92%;margin-left: auto;margin: auto;margin-top: 30px;height: 50px;border-radius: 5px;background: rgb(237 242 247);">
+      <div class="rectangle-1" style="display: flex;align-items: center;width: 92%;margin-left: auto;margin: auto;margin-top: 30px;height: 50px;border-radius: 5px;background: #f4f4f4;">
         <input class="input" id="addressInput" placeholder="Enter Your Location" id="locationAutocomplete" style="height: 50px;">
         <i class="bx bx-current-location" style="position: relative;
         left: 7px;
@@ -654,91 +664,162 @@ button {
         top: 0px;"></i>
     </div>
 
-    <div id="autoCompleteAddresses" style="    background: rgb(237 242 247);
+    <div id="autoCompleteAddresses" style="    background: #f4f4f4;
     width: 92%;
     height: auto;
     margin: auto;
-    margin-top: 10px;border-radius: 5px;padding-bottom: 0px;z-index: 10000;position: relative;">
-      
-    </div>
-      <span class="nearby" style="    text-align: center;
-    margin-top: 50px;">OR</span
-      >
+    margin-top: 10px;border-radius: 5px;padding-bottom: 0px;z-index: 10000;    position: absolute;
+    left: 50%;
+    transform: translate(-50%);">
+    
+  </div>
+  
 
-      <div class="realLlocation">
-          <button class="button-e" id="enableLocation"><span class="shop-now-f">Enable</span></button>
-          <div class="polygon" style="display: flex;align-items: center;justify-content: center;">
-              <i class='bx bxs-location-plus' style="font-size: 23px;"></i>
-            </div>
-            <span class="current-location">Current location</span>
+  <span class="nearby" style="    text-align: center">OR</span
+    >
+
+    <div class="realLlocation" style="/* margin-top: 500px; */height: 100px;/* background: red; */position: relative;">
+      <button class="button-e" id="enableLocation" style="
+top: 10px;
+"><span class="shop-now-f">Enable</span></button>
+      <div class="polygon" style="display: flex;align-items: center;top: 10px;justify-content: center;">
+          <i class="bx bxs-location-plus" style="font-size: 23px;"></i>
         </div>
+        <span class="current-location" style="
+top: 15px;
+">Current location</span>
+    </div>
+
+
+    
+    <div id="savedAddress" style="width: 92%;margin: auto;font-family: Inter, var(--default-font-family);display: none;">
+      <div>Saved Address</div>
+      <div id="allSavedAddressSection">
+
+    
+      </div>
+    </div>
+
+
+  
+     
+  
+
+    <form id="savedNewAddressForm">
+
+    <div id="repeatedSection" style="visibility: hidden;">
+  <div id="mapArea" style="height: 300px;
+  width: 92%;
+  margin: auto;
+  background:transparent;
+  overflow: hidden;margin-top: 40px;">
+    <div id="map" style="height: 320px;width: 100%;border-radius: 5px;"></div>
+  </div>
+
+
+  <div class="input-group" style="width: 92%; margin: auto; margin-top: 20px;">
+    <label class="radio">
+        <input class="radio__input" id="category" name="category" type="radio" value="Home" required />
+        <span class="radio__label">Home</span>
+    </label>
+    <label class="radio">
+        <input class="radio__input" id="category" name="category" type="radio" value="Office" />
+        <span class="radio__label">Office</span>
+    </label>
+    <label class="radio">
+        <input class="radio__input" id="category" name="category" type="radio" value="Other" />
+        <span class="radio__label">Other</span>
+    </label>
+</div>
+
+
+ 
+ 
+  <div class="rectangle-1" style="display: flex;align-items: center;width: 92%;margin-left: auto;margin: auto;margin-top: 30px;height: 50px;border-radius: 5px;background: #f4f4f4;margin-top: 60px;">
+    <span style="position: absolute;top: -35px;left: 4px;font-family: Inter, var(--default-font-family);">Enter Detailed Address (*)</span>
+    <input class="input" required id="fullAddress" name="fullAddress" placeholder="Company , Building *" id="locationAutocomplete" style="height: 50px;left: 15px;">
+  </div>
+  <div class="rectangle-1" style="display: flex;align-items: center;width: 92%;margin-left: auto;margin: auto;margin-top: 10px;height: 50px;border-radius: 5px;background: #f4f4f4;">
+    <input class="input" required id="fullAddress" name="fullAddress" placeholder="Floor *" id="locationAutocomplete" style="height: 50px;left: 15px;">
+  </div>
+  <div class="rectangle-1" style="display: flex;align-items: center;width: 92%;margin-left: auto;margin: auto;margin-top: 10px;height: 50px;border-radius: 5px;background: #f4f4f4;">
+    <input class="input" id="fullAddress" name="fullAddress" placeholder="Nearby Landmark (optional)" id="locationAutocomplete" style="height: 50px;left: 15px;">
+  </div>
+  <input class="input" id="NewAddress_lat" name="lat" id="lat" style="height: 50px;left: 15px;display: none;">
+  <input class="input" id="NewAddress_lng" name="lng" id="lng" style="height: 50px;left: 15px;display: none;">
+
+ 
+
+  
+  <input type="submit" name="submit" id="submit" value="Confirm Address" style="    height: 50px;
+  width: 92%;
+  border-radius: 5px;
+  background: linear-gradient(63deg, #00612d, #55b46e);
+  margin-bottom: 80px;
+  color: white;
+  font-family: Inter, var(--default-font-family);
+  display: grid
+;
+  place-content: center;
+  margin: auto;
+  margin-top: 30px;
+  margin-bottom: 30px;cursor: pointer;border: none;font-size: 17px;">
 
     </div>
-    <!-- Generated by Codia AI - https://codia.ai/ -->
+
+  </form>
+
+  <script>
+    document.getElementById('savedNewAddressForm').addEventListener('submit', async function(event) {
+    event.preventDefault();  // Prevent default form submission
+
+    // Get selected category
+    const selectedCategory = document.querySelector('input[name="category"]:checked').value;
+    console.log(selectedCategory)
+
+    // Get form values
+    const fullAddress = document.getElementById('fullAddress').value;
+    const lat = document.getElementById('NewAddress_lat').value;
+    const lng = document.getElementById('NewAddress_lng').value;
+
+    // Concatenate address data into full address string
+    const fullAddressData = fullAddress.toString();
+
+    // Create data object to send to server
+    const addressData = {
+        category: selectedCategory,
+        fullAddress: fullAddress.trim(),
+        lat: lat,
+        lng: lng
+    };
+
+    // Send data to server using Axios
+    await axios.post('/saveNewAddress', addressData)
+        .then(response => {
+            console.log("Address saved:", response.data);
+            if (response.data.success) {
+                // Redirect or display success message
+                alert('Address saved successfully!');
+                window.location.href = '/home'; // For example, redirect to homepage
+            } else {
+                alert('Failed to save address.');
+            }
+        })
+        .catch(error => {
+            console.error("Error saving address:", error);
+            alert('Error saving address.');
+        });
+});
+
+  </script>
+
+
+
+    </div>
   </body>
 
-  <!-- for getting user's current location -->
-  <script>
-    const enableButton = document.getElementById("enableLocation");
-    const locationOutput = document.getElementById("locationOutput");
-
-    enableButton.addEventListener("click", () => {
-        if ("geolocation" in navigator) {
-            // locationOutput.innerHTML = "Getting location...";
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const { latitude, longitude } = position.coords;
-
-                    // Display latitude and longitude
-                    // locationOutput.innerHTML = `
-                    //     <p><strong>Latitude:</strong> ${latitude}</p>
-                    //     <p><strong>Longitude:</strong> ${longitude}</p>
-                    // `;
-
-                   
-                    // Fetch detailed address using Nominatim
-                    try {
-                        const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error("Unable to fetch address.");
-                        const data = await response.json();
-
-                        // Extract details
-                        const address = data.display_name || "Address not available";
-                        const pincode = data.address.postcode || "Pincode not available";
-                        const city = data.address.city || data.address.town || "City not available";
-
-                        console.log(address);
-                    console.log(pincode);
-                    console.log(position.coords);
-                    
-                        // Update location details
-
-                        // locationOutput.innerHTML += `
-                        //     <p><strong>Address:</strong> ${address}</p>
-                        //     <p><strong>Pincode:</strong> ${pincode}</p>
-                        //     <p><strong>City:</strong> ${city}</p>
-                        // `;
-                    } catch (error) {
-                        console.error(error);
-                        // locationOutput.innerHTML += "<p>Unable to fetch address details.</p>";
-                    }
-                },
-                (error) => {
-                    // Handle geolocation errors
-                    // locationOutput.innerHTML = `<p>Error: ${error.message}</p>`;
-                }
-            );
-        } else {
-            locationOutput.innerHTML = "<p>Geolocation is not supported by your browser.</p>";
-        }
-    });
-</script>
-
-
- <!-- For AutoComplete Address -->
- <script>
-  let debounceTimer; // Variable to track the debounce timer
+<script>
+  let debounceTimer;
 
   async function getAutocomplete(query) {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&countrycodes=IN&format=json&addressdetails=1&limit=5`);
@@ -746,10 +827,12 @@ button {
       const data = await response.json();
       // Return detailed results including display_name and pincode
       return data.map(item => ({
-          display_name: item.display_name,
-          pincode: item.address.postcode || "N/A",
-          city: item.address.city || item.address.town || item.address.village || "N/A",
-      }));
+        display_name: item.display_name,
+        pincode: item.address.postcode || "N/A",
+        city: item.address.city || item.address.town || item.address.village || "N/A",
+        latitude: item.lat,
+        longitude: item.lon,
+    }));
   }
 
   // Autocomplete input event listener
@@ -771,12 +854,14 @@ button {
           try {
               const suggestions = await getAutocomplete(query);
               console.log(suggestions); // Log suggestions for debugging
+              suggestionBox.style.paddingBottom = `0px`;
 
               // Create and display suggestions
               if (suggestions.length > 0) {
                   suggestionBox.style.paddingBottom = `10px`;
+                  suggestionBox.style.background= `#f4f4f4`;
                   const suggestionsHTML = suggestions.map(item => `
-                      <div class="suggestion-item" style="padding: 10px;
+                      <div class="suggestion-item" onclick="setMapPosition(${parseFloat(item.latitude)},${parseFloat(item.longitude)})" style="padding: 10px;
     font-family: var(--default-font-family);
     margin-bottom: 10px;
     margin-top: 10px;cursor:pointer" onclick="selectAddress('${item.display_name}', '${item.city}')">
@@ -797,10 +882,193 @@ button {
 
   // Function to handle selection of an address
   function selectAddress(displayName, city) {
+      document.getElementById("repeatedSection").style.display="block";
       inputField.value = `${city} , ${displayName}`;
       suggestionBox.innerHTML = ``; // Clear suggestions
   }
+
+  async function selectSavedAddress(displayName, city, addressId) {
+    try {
+        // Send a POST request to update the selected address
+        const response = await axios.post('/updateSelectedAddress', { addressId });
+
+        // Check if the request was successful
+        if (response.data.success) {
+          window.location.href = "/"; // Redirect to the homepage
+
+        } else {
+            console.error("Failed to update selected address:", response.data.message);
+        }
+    } catch (error) {
+        console.error("Error updating selected address:", error);
+    }
+}
+
 </script>
 
+<!-- For Leaflet Maps-->
+<script>
+
+    // Example: Coordinates for the user's current location
+    const lat = 19.0760; // Replace with your latitude
+  const lng = 72.8777; // Replace with your longitude
+
+
+      // Create the map instance centered on the provided coordinates
+      const map = L.map('map').setView([lat, lng], 13);
+
+      // Add the tile layer
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://carto.com/attributions">CartoDB</a>'
+      }).addTo(map);
+
+      // Define the custom icon
+      const locationIcon = L.icon({
+          iconUrl: 'locationIcon.svg', // Path to your icon file
+          iconSize: [32, 32],         // Size of the icon
+          iconAnchor: [16, 32],       // Anchor point of the icon
+          popupAnchor: [0, -32]       // Anchor point for the popup
+      });
+
+      // Add the marker with the custom icon
+      const draggableMarker = L.marker([lat,lng], {
+            draggable: true,
+            icon: L.icon({
+                iconUrl: 'locationIcon.svg', // Custom icon URL
+                iconSize: [40, 40], // Size of the icon
+                iconAnchor: [20, 40], // Point of the icon which will correspond to marker's location
+            })
+        }).addTo(map);
+
+        function setMapPosition(lat, lng) {
+          document.getElementById("repeatedSection").style.visibility="visible";
+
+          // Scrolls to the bottom of the page
+          window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth' // Enables smooth scrolling
+          });
+
+          document.getElementById("NewAddress_lat").value=lat;
+          document.getElementById("NewAddress_lng").value=lng;
+
+
+          document.getElementById("autoCompleteAddresses").paddingBottom=`0px`;
+            document.getElementById("autoCompleteAddresses").innerHTML=``;
+            const newPosition = L.latLng(lat, lng); // Create a LatLng object
+            map.setView(newPosition, 14); // Set map center
+            draggableMarker.setLatLng(newPosition); // Move marker to new position
+        }
+        
+        // Event listener for drag end
+        draggableMarker.on('dragend', function (event) {
+            const position = event.target.getLatLng(); // Get the marker's position
+            console.log("Latitude:", position.lat, "Longitude:", position.lng); // Log to console
+            // alert(`Pin Position:\nLatitude: ${position.lat}, Longitude: ${position.lng}`);
+            map.setView(position, map.getZoom());
+
+        });
+
+  
+
+</script>
+
+
+<script>
+  const enableButton = document.getElementById("enableLocation");
+  const locationOutput = document.getElementById("locationOutput");
+
+  enableButton.addEventListener("click", () => {
+      if ("geolocation" in navigator) {
+          // locationOutput.innerHTML = "Getting location...";
+          navigator.geolocation.getCurrentPosition(
+              async (position) => {
+                  const { latitude, longitude } = position.coords;
+
+                  await setMapPosition(latitude,longitude);
+                  // Display latitude and longitude
+                  // locationOutput.innerHTML = `
+                  //     <p><strong>Latitude:</strong> ${latitude}</p>
+                  //     <p><strong>Longitude:</strong> ${longitude}</p>
+                  // `;
+
+                 
+                  // Fetch detailed address using Nominatim
+                  try {
+                      const url = `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`;
+                      const response = await fetch(url);
+                      if (!response.ok) throw new Error("Unable to fetch address.");
+                      const data = await response.json();
+
+                      // Extract details
+                      const address = data.display_name || "Address not available";
+                      const pincode = data.address.postcode || "Pincode not available";
+                      const city = data.address.city || data.address.town || "City not available";
+
+                      console.log(address);
+                  console.log(pincode);
+                  console.log(position.coords);
+                  
+                      // Update location details
+
+                      // locationOutput.innerHTML += `
+                      //     <p><strong>Address:</strong> ${address}</p>
+                      //     <p><strong>Pincode:</strong> ${pincode}</p>
+                      //     <p><strong>City:</strong> ${city}</p>
+                      // `;
+                  } catch (error) {
+                      console.error(error);
+                      // locationOutput.innerHTML += "<p>Unable to fetch address details.</p>";
+                  }
+              },
+              (error) => {
+                  // Handle geolocation errors
+                  // locationOutput.innerHTML = `<p>Error: ${error.message}</p>`;
+              }
+          );
+      } else {
+          locationOutput.innerHTML = "<p>Geolocation is not supported by your browser.</p>";
+      }
+  });
+</script>
+
+<script>
+  
+window.onload = async function() {
+    try {
+        // Send a GET request to fetch the total items in the cart
+        const response = await axios.get('/getUserAddresses');
+        
+        // Check if the request was successful
+        if (response.data.success) {
+            // Update the innerHTML of the cartCount element with the total items count
+           console.log(response.data.message)
+           console.log(response.data.message.length)
+
+           if(response.data.message.length){
+            document.getElementById("savedAddress").style.display="block";
+           }
+
+           for(var i=0;i<response.data.message.length;i++){
+              document.getElementById("allSavedAddressSection").innerHTML+=`
+                <div class="suggestion-item"  style="padding: 10px;
+    font-family: var(--default-font-family);
+    margin-bottom: 10px;
+    margin-top: 10px;cursor:pointer" onclick="selectSavedAddress('${response.data.message[i].category}', '${response.data.message[i].fullAddress}' , '${response.data.message[i].address_id}' )">
+                          <strong id="addressCategory" style=" font-family: var(--default-font-family);">${response.data.message[i].category}</strong> <br>
+                          <small id="addressFull" style=" font-family: var(--default-font-family);">${response.data.message[i].fullAddress}</small>
+                      </div>
+              `
+           }
+        } else {
+            // Handle the error if cart count retrieval fails
+            console.error("Failed to fetch Address ");
+        }
+    } catch (error) {
+        // Handle any errors from the API request
+        console.error("Error fetching Address", error);
+    }
+};
+</script>
 
 </html>

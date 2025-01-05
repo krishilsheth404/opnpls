@@ -490,6 +490,12 @@ button {
 </style>
   </head>
   <body>
+    <script>
+      const finalData = JSON.parse('<%- JSON.stringify(final) %>');
+      console.log(finalData.orderId); // Check if the data is loaded correctly
+  </script>
+  
+  
     <div class="main-container" style="width: 100%;">
       <div class="rectangle">
         <span class="chemists-near-you">Chemists Near You</span>
@@ -774,11 +780,15 @@ button {
      <script>
       window.onload = async function () {
           try {
+
+            const finalData = JSON.parse('<%- JSON.stringify(final) %>');
+            console.log(finalData.orderId); // Check if the data is loaded correctly
+
               // Send POST request using axios
               const response = await axios({
-                  url: '/compareCartItems',
-                  method: 'POST',
-              });
+                url: `/compareCartItemsFromRepeatOrder/${finalData.orderId}`,
+                method: 'GET',
+             });
   
               // Log the response to understand its structure
               // console.log(response.data.responses);
@@ -789,7 +799,7 @@ button {
                 console.log(response.data.responses[i].chemistId)
                 console.log(response.data.responses[i].data)
                 console.log(response.data.responses[i])
-                
+
                 var medicineDivList="";
                 for(var k=0;k<response.data.responses[i].data.length;k++){
                   var d=response.data.responses[i].data[k]['result']||0;
@@ -807,16 +817,16 @@ button {
                    
                     <input style="font-family: Inter, var(--default-font-family);font-size: 12px;display:none;    border: none;
                     font-size: small;
-                    font-weight: 500;width:50px;text-align:center;font-weight:600" readonly name="qty" id="qty" value="${d.quantityUserWants}">
-                    <span style="padding-left:0px;padding-right:0px;font-family: Inter, var(--default-font-family);font-size: 15px">( ${d.quantityUserWants} )</span>
+                    font-weight: 500;width:50px;text-align:center;font-weight:600" readonly name="qty" id="qty" value="${response.data.responses[i].data[k]['result'].quantityUserWants}">
+                    <span style="padding-left:0px;padding-right:0px;font-family: Inter, var(--default-font-family);font-size: 15px">( ${response.data.responses[i].data[k]['result'].quantityUserWants} )</span>
                       
                    <input style="font-family: Inter, var(--default-font-family);font-size: 12px;display:none;    border: none;
                       font-size: small;
-                      font-weight: 500;width:auto" readonly name="medicineNames" id="medicineNames" value="${d.MedicineName}">
+                      font-weight: 500;width:auto" readonly name="medicineNames" id="medicineNames" value="${response.data.responses[i].data[k]['result'].MedicineName}">
                       
                    <input style="font-family: Inter, var(--default-font-family);font-size: 12px;display:none;    border: none;
                       font-size: small;
-                      font-weight: 500;width:auto" readonly name="medicinePackSize" id="medicinePackSize" value="${d.PackSize}">
+                      font-weight: 500;width:auto" readonly name="medicinePackSize" id="medicinePackSize" value="${response.data.responses[i].data[k]['result'].PackSize}">
                       
                       <div style="display: flex
 ;
@@ -832,10 +842,12 @@ button {
                       <input style="font-family: Inter, var(--default-font-family);font-size: 12px;display:none;    border: none;
                         font-size: small;
                         font-weight: 500;width:auto"  name="medicinePrices" id="medicinePrices" readonly value="${response.data.responses[i].data[k]['result'].Mrp}">
-                    </span> 
-                     <input type="text" name="medicineId" id="medicineId" style="display:none;    border: none;
+                        <input type="text" name="medicineId" id="medicineId" style="display:none;    border: none;
     font-size: large;
     font-weight: 500;" readonly value="${d.medicineId}">  
+                     
+                     
+                    </span> 
                     `
                     mrpTotal+=parseFloat(response.data.responses[i].data[k]['result'].Mrp);
                   }else{
@@ -855,7 +867,6 @@ button {
                     font-weight: 400;
                     width: 33%;text-decoration:line-through">Qty : ${response.data.responses[i].data[k]['result'].quantityUserWants}</span>
                     </span> 
-                      
                     `
                   }
                   
@@ -864,7 +875,7 @@ button {
                 document.getElementById('chemistList').innerHTML+=`
                 <div class="frame accordion"  style="height: auto;padding-bottom: 10px;width:95%">
        
-        <form action="checkout" method="POST" style="width:100%">
+        <form action="/checkout" method="POST" style="width:100%">
         <div class="group"  style="width:100%"  id="item${i}" onclick="showContent('item${i}')">
           <div class="group-4" style="width:100%">
             <div class="group-5"></div>
@@ -873,10 +884,7 @@ button {
               ><span class="noble-plus" style="padding-left:0px">
                 <input type="text" name="chemistId" id="chemistId" style="display:none;    border: none;
     font-size: large;
-    font-weight: 500;" readonly value="${response.data.responses[i].chemistId}"> 
-
-  
-
+    font-weight: 500;" readonly value="${response.data.responses[i].chemistId}">  
      <input type="text" name="chemistName" id="chemistName" style="display:block;    border: none;
     font-size: large;
     font-weight: 500;" readonly value="${response.data.responses[i].chemistName}">      
