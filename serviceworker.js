@@ -1,43 +1,76 @@
-var staticCacheName = "pwa-v1";
+const staticCacheName = "static-cache-v1";
+const dynamicCacheName = "dynamic-cache-v1";
 
-self.addEventListener("install", function (e) {
-    console.log("Service Worker installing...");
+// List of essential assets to cache for offline use
+const assets = [
+  "./manifest.json",
+  "./",
+  "./home.html", 
+];
 
-    e.waitUntil(
-        caches.open(staticCacheName).then(function (cache) {
-            console.log("Caching static assets...");
-            return cache.addAll([
-                '/', // Cache the root of the application
-                '/home.html', // Add specific files you want to cache
-            ]);
-        })
-    );
+// Installing service worker and caching assets
+self.addEventListener("install", (e) => {
+  e.waitUntil(
+    caches
+      .open(staticCacheName)
+      .then((cache) => cache.addAll(assets))
+      .catch((err) => {
+        console.log("❌ SW Installation Error", err);
+      })
+  );
+  self.skipWaiting();
 });
 
-self.addEventListener("fetch", function (event) {
-    console.log("Fetching:", event.request.url);
-
-    event.respondWith(
-        caches.match(event.request).then(function (response) {
-            // Serve the cached file if available, otherwise fetch from network
-            return response || fetch(event.request);
-        })
-    );
+// Activating service worker and cleaning up old caches
+self.addEventListener("activate", (e) => {
+  e.waitUntil(
+    caches
+      .keys()
+      .then((keys) => {
+        return Promise.all(
+          keys
+            .filter((key) => key !== staticCacheName && key !== dynamicCacheName)
+            .map((key) => caches.delete(key))
+        );
+      })
+      .catch((err) => {
+        console.log("❌ SW Activation Error", err);
+      })
+  );
 });
 
-self.addEventListener("activate", function (e) {
-    console.log("Service Worker activating...");
+// Fetching resources (both static and dynamic) and caching new dynamic content
+self.addEventListener("fetch", (e) => {
+  e.respondWith(
+    caches
+      .match(e.request)
+      .then((cacheRes) => {
+        return (
+          cacheRes ||
+          fetch(e.request)
+            .then((fetchRes) => {
+              // Cache dynamic content (API responses, search results, etc.)
+              return caches.open(dynamicCacheName).then((cache) => {
+                // Check if the request is for an API that retrieves product prices or comparisons
+                if (e.request.url.indexOf("/api/") > -1) {
+                  cache.put(e.request.url, fetchRes.clone());
+                }
+                return fetchRes;
+              });
+            })
+            .catch((err) => {
+              console.log("❌ SW Fetching Error", err);
+              // Provide fallback for offline or network errors
+              if (e.request.url.indexOf("/api/") > -1) {
+                return new Response(JSON.stringify({ message: "Offline - unable to fetch data" }), {
+                  headers: { "Content-Type": "application/json" },
+                });
+              }
 
-    e.waitUntil(
-        caches.keys().then(function (cacheNames) {
-            return Promise.all(
-                cacheNames.map(function (cache) {
-                    if (cache !== staticCacheName) {
-                        console.log("Deleting old cache:", cache);
-                        return caches.delete(cache);
-                    }
-                })
-            );
-        })
-    );
+              // Return a cached home page or fallback page
+              return caches.match("./home.html");
+            })
+        );
+      })
+  );
 });
