@@ -9,7 +9,6 @@
 <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<link rel="manifest" href="manifest.json">
 
 
 <script src="https://unpkg.com/boxicons@2.1.4/dist/boxicons.js"></script>
@@ -6870,18 +6869,6 @@ if (!localStorage.getItem('locationAsked')) {
 <script>
 
 window.onload = async function() {
- 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker
-        .register('/serviceworker.js')
-        .then((registration) => {
-            console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch((error) => {
-            console.error('Service Worker registration failed:', error);
-        });
-}
-
 
   try {
         // Send a GET request to fetch the total items in the cart
