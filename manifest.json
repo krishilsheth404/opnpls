@@ -2,7 +2,8 @@
     "start_url": "/landing",
     "name": "OpenPills",
     "short_name": "OpenPills",
-    "display": "standalone",
+    "display_override": ["fullscreen", "minimal-ui"],
+  "display": "standalone"
     "orientation": "portrait-primary",
     "description": "OpenPills is a platform to compare the prices of medicines from different pharmacies.",
     "background_color": "#ffffff",
