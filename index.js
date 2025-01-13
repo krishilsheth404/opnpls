@@ -96,7 +96,7 @@ const authenticateToken = (req, res, next) => {
     if (!token) {
         req.isAuthenticated = false;
         console.error('No token provided.');
-        return res.redirect('/landingPage.html');
+        return res.redirect('/landing');
     }
 
     jwt.verify(token, JWT_SECRET, (err, decoded) => {
@@ -193,6 +193,27 @@ io.on('connection', (socket) => {
             // alert(`Your order was rejected: ${message.reason}`);
             // Update the UI, show an option to upload a new prescription
         });
+        socket.on('PrescriptionNotOk', async (orderId) => {
+            console.log("ALL Not OK " + orderId)
+            const ordersCollection = db.collection('Orders');
+            await ordersCollection.updateOne(
+                { orderId }, // Find the document with matching orderId
+                { $set: { PrescriptionVerified: 'Pending' } } // Update PrescriptionVerified to 'Done'
+            );
+            // alert(`Your order was rejected: ${message.reason}`);
+            // Update the UI, show an option to upload a new prescription
+        });
+        socket.on('cancelOrder', async (orderId) => {
+            console.log("Order Cancelled " + orderId)
+            const ordersCollection = db.collection('Orders');
+            await ordersCollection.updateOne(
+                { orderId }, // Find the document with matching orderId
+                { $set: { status: 'Cancelled' } } // Update PrescriptionVerified to 'Done'
+            );
+            // alert(`Your order was rejected: ${message.reason}`);
+            // Update the UI, show an option to upload a new prescription
+        });
+
 
         socket.on('updateOrderStatusFromChemist', async (data) => {
             const status = data.status;
@@ -229,14 +250,9 @@ io.on('connection', (socket) => {
 
         });
 
-        socket.on('orderRejection', async (message) => {
-            const ordersCollection = db.collection('Orders');
-            await ordersCollection.updateOne(
-                { orderId }, // Find the document with matching orderId
-                { $set: { PrescriptionVerified: 'Wrong' } } // Update PrescriptionVerified to 'Done'
-            );
+        
 
-        });
+        
 
 
 
@@ -253,23 +269,9 @@ server.listen(8080, () => {
 
 
 
-app.get('/landing', authenticateToken, async (req, res) => {
-    try {
-        // Check if the user is authenticated
-        if (req.isAuthenticated) {
-            // Redirect to /home if authenticated
-            return res.redirect('/home');
-        }
-
-        // Otherwise, serve the landing page
-        res.sendFile(__dirname + "/landingPage.html");
-    } catch (error) {
-        console.error('Error in landing page route:', error);
-        res.status(500).send('An error occurred.');
-    }
-});
-
-
+app.get('/landing', async (req, res) => {
+    await res.sendFile(__dirname + "/landingPage.html");
+})
 app.get('/login', async (req, res) => {
     await res.sendFile(__dirname + "/registrationPage.html");
 })

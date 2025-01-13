@@ -1064,6 +1064,10 @@ button {
         document.getElementById('firstPart').style.background="green"
         document.getElementById('secondPart').style.background="green"
         document.getElementById('thirdPart').style.background="green"
+      }else if(document.getElementById('orderStatus').innerHTML=="Cancelled"){
+        document.getElementById('firstPart').style.background="red"
+        document.getElementById('secondPart').style.background="red"
+        document.getElementById('thirdPart').style.background="red"
       }
   
          const orderId = "<%= parsedFinal.orderId %>"; // Pass the orderId dynamically
@@ -1081,6 +1085,7 @@ button {
       console.log(data)
       const orderStatusElement = document.getElementById('orderStatus');
       orderStatusElement.innerHTML = `${data.status}`;
+      console.log(data.status)
   
       if(data.status=="Pending"){
         document.getElementById('firstPart').style.background="rgb(182, 182, 182)"
@@ -1094,6 +1099,10 @@ button {
         document.getElementById('firstPart').style.background="green"
         document.getElementById('secondPart').style.background="green"
         document.getElementById('thirdPart').style.background="green"
+      }else if(data.status=="Cancelled"){
+        document.getElementById('firstPart').style.background="red"
+        document.getElementById('secondPart').style.background="red"
+        document.getElementById('thirdPart').style.background="red"
       }
   };
   
